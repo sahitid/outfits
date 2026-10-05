@@ -3,3 +3,9 @@ dist/
 .wrangler/
 .env
 *.tar.gz
+
+.next/
+out/
+
+.local/
+.env.local

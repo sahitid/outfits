@@ -1,9 +1,364 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {DatabaseSync} from 'node:sqlite';import {readFileSync,readdirSync} from 'node:fs';import worker from '../worker.js';import {pairing,samplePieces,parseCalendar} from '../lib.js';
-function environment(){const sql=new DatabaseSync(':memory:');for(const f of readdirSync('drizzle').filter(f=>f.endsWith('.sql')))sql.exec(readFileSync('drizzle/'+f,'utf8'));const statement=(query,args=[])=>({bind(...values){return statement(query,values)},async all(){return {results:sql.prepare(query).all(...args)}},async first(){return sql.prepare(query).get(...args)||null},async run(){return sql.prepare(query).run(...args)}});const blobs=new Map();return {DB:{prepare:statement,async batch(stmts){sql.exec('BEGIN');try{const out=await Promise.all(stmts.map(s=>s.run()));sql.exec('COMMIT');return out}catch(e){sql.exec('ROLLBACK');throw e}}},BUCKET:{async put(key,body,options){blobs.set(key,{body,httpMetadata:options.httpMetadata})},async get(key){return blobs.get(key)},async delete(key){blobs.delete(key)}},ASSETS:{fetch:async()=>new Response('page')},sql}}
-function req(path,owner='alice',method='GET',data){const headers=owner?{'oai-authenticated-user-id':owner,'oai-authenticated-user-email':owner+'@example.test'}:{};if(data&&!(data instanceof FormData))headers['content-type']='application/json';return new Request('https://closet.test/api/'+path,{method,headers,body:data instanceof FormData?data:data?JSON.stringify(data):undefined})}
-async function add(env,owner,name,category){const form=new FormData();form.set('photo',new Blob([new Uint8Array([255,216,255,224,0,1,2,3,4,5,6,7,8,9])],{type:'image/jpeg'}),'photo.jpg');form.set('name',name);form.set('category',category);form.set('moods','["casual"]');form.set('color','white');form.set('warmth','2');const r=await worker.fetch(req('garments',owner,'POST',form),env);assert.equal(r.status,201);return r.json()}
-test('pairings honor mood and always include a top and bottom',()=>{for(const mood of ['casual','professional','athletic']){const r=pairing(samplePieces,mood,{temperature:20,rain:0},'2026-10-05');const p=r.pieces.map(id=>samplePieces.find(x=>x.id===id));assert(p.some(x=>x.category==='tops'));assert(p.some(x=>x.category==='bottoms'));assert(p.every(x=>x.moods.includes(mood)));assert.deepEqual(r,pairing(samplePieces,mood,{temperature:20,rain:0},'2026-10-05'))}assert.throws(()=>pairing(samplePieces.filter(p=>p.category==='tops'),'casual',null,'2026-10-05'),/top and one bottom/)});
-test('hot forecast picks lightweight athletic top and cold professional day adds layer',()=>{const hot=pairing(samplePieces,'athletic',{temperature:30,rain:70},'2026-10-05');assert(hot.pieces.includes('sample-1'));assert.match(hot.reason,/umbrella/);const cold=pairing(samplePieces,'professional',{temperature:10,rain:0},'2026-10-05');assert(cold.pieces.includes('sample-3'))});
-test('calendar import preserves time zone, recurring weekdays, exclusions, and avoids duplicates',()=>{const now=new Date('2026-10-05T04:00:00Z');const ics='BEGIN:VCALENDAR\nBEGIN:VEVENT\nUID:meeting\nDTSTART;TZID=America/New_York:20261005T090000\nDTEND;TZID=America/New_York:20261005T100000\nRRULE:FREQ=WEEKLY;BYDAY=MO,WE;COUNT=5\nEXDATE;TZID=America/New_York:20261007T090000\nSUMMARY:Team meeting\nEND:VEVENT\nEND:VCALENDAR';const r=parseCalendar(ics,'America/New_York',now);assert.equal(r.events.length,4);assert.equal(r.events[0].start,'2026-10-05T13:00:00.000Z');assert.equal(r.events[0].end,'2026-10-05T14:00:00.000Z');assert.equal(r.events[0].mood,'professional');assert.equal(new Set(r.events.map(e=>e.source)).size,4);const dst=parseCalendar(ics.replace('20261005','20261102').replace('20261007','20261104'),'America/New_York',now);assert.equal(dst.events[0].start,'2026-11-02T14:00:00.000Z');assert.throws(()=>parseCalendar('random'),/valid/)});
-test('private data requires identity and is isolated by owner',async()=>{const env=environment();assert.equal((await worker.fetch(req('closet',null),env)).status,401);const top=await add(env,'alice','Alice top','tops'),bottom=await add(env,'alice','Alice jeans','bottoms');let r=await worker.fetch(req('closet','alice'),env);assert.equal((await r.json()).garments.length,2);r=await worker.fetch(req('closet','bob'),env);assert.equal((await r.json()).garments.length,0);assert.equal((await worker.fetch(req('images/'+top.id,'bob'),env)).status,404);assert.equal((await worker.fetch(req('garments/'+top.id,'bob','DELETE'),env)).status,404);assert.equal((await worker.fetch(req('outfits','bob','POST',{name:'Stolen',mood:'casual',pieces:[top.id,bottom.id]}),env)).status,400);const o=await worker.fetch(req('outfits','alice','POST',{name:'Favorite',mood:'casual',pieces:[top.id,bottom.id]}),env);assert.equal(o.status,201);const saved=await o.json();await worker.fetch(req('outfits/'+saved.id,'bob','DELETE'),env);assert.equal((await (await worker.fetch(req('closet','alice'),env)).json()).outfits.length,1);assert.equal((await worker.fetch(req('garments/'+top.id,'alice','DELETE'),env)).status,200);const after=await (await worker.fetch(req('closet','alice'),env)).json();assert.equal(after.garments.length,1);assert.equal(after.outfits.length,0)});
-test('write requests reject foreign origins and missing storage shows a useful error',async()=>{const r=new Request('https://closet.test/api/events',{method:'POST',headers:{'oai-authenticated-user-id':'alice',origin:'https://evil.test'},body:'{}'});assert.equal((await worker.fetch(r,environment())).status,403);const missing=await worker.fetch(req('closet'),{});assert.equal(missing.status,503);assert.match((await missing.json()).error,/unavailable/)});
+import test from "node:test";
+import assert from "node:assert/strict";
+import { DatabaseSync } from "node:sqlite";
+import { readFileSync, readdirSync } from "node:fs";
+import worker from "../worker.js";
+import { pairing, samplePieces, parseCalendar } from "../lib.js";
+import { validateFeed } from "../connections.js";
+import { colorHarmony, printBalance } from "../styling.js";
+function environment() {
+  const sql = new DatabaseSync(":memory:");
+  for (const f of readdirSync("drizzle").filter((f) => f.endsWith(".sql")))
+    sql.exec(readFileSync("drizzle/" + f, "utf8"));
+  const statement = (query, args = []) => ({
+    bind(...values) {
+      return statement(query, values);
+    },
+    async all() {
+      return { results: sql.prepare(query).all(...args) };
+    },
+    async first() {
+      return sql.prepare(query).get(...args) || null;
+    },
+    async run() {
+      return sql.prepare(query).run(...args);
+    },
+  });
+  const blobs = new Map();
+  return {
+    DB: {
+      prepare: statement,
+      async batch(stmts) {
+        sql.exec("BEGIN");
+        try {
+          const out = await Promise.all(stmts.map((s) => s.run()));
+          sql.exec("COMMIT");
+          return out;
+        } catch (e) {
+          sql.exec("ROLLBACK");
+          throw e;
+        }
+      },
+    },
+    BUCKET: {
+      async put(key, body, options) {
+        blobs.set(key, { body, httpMetadata: options.httpMetadata });
+      },
+      async get(key) {
+        return blobs.get(key);
+      },
+      async delete(key) {
+        blobs.delete(key);
+      },
+    },
+    ASSETS: { fetch: async () => new Response("page") },
+    sql,
+  };
+}
+function req(path, owner = "alice", method = "GET", data) {
+  const headers = owner
+    ? {
+        "oai-authenticated-user-id": owner,
+        "oai-authenticated-user-email": owner + "@example.test",
+      }
+    : {};
+  if (data && !(data instanceof FormData))
+    headers["content-type"] = "application/json";
+  return new Request("https://closet.test/api/" + path, {
+    method,
+    headers,
+    body:
+      data instanceof FormData ? data : data ? JSON.stringify(data) : undefined,
+  });
+}
+async function add(env, owner, name, category) {
+  const form = new FormData();
+  form.set(
+    "photo",
+    new Blob(
+      [new Uint8Array([255, 216, 255, 224, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9])],
+      { type: "image/jpeg" },
+    ),
+    "photo.jpg",
+  );
+  form.set("name", name);
+  form.set("category", category);
+  form.set("moods", '["casual"]');
+  form.set("color", "white");
+  form.set("warmth", "2");
+  const r = await worker.fetch(req("garments", owner, "POST", form), env);
+  assert.equal(r.status, 201);
+  return r.json();
+}
+test("pairings honor mood and always include a top and bottom", () => {
+  for (const mood of ["casual", "professional", "athletic"]) {
+    const r = pairing(
+      samplePieces,
+      mood,
+      { temperature: 20, rain: 0 },
+      "2026-10-05",
+    );
+    const p = r.pieces.map((id) => samplePieces.find((x) => x.id === id));
+    assert(p.some((x) => x.category === "tops"));
+    assert(p.some((x) => x.category === "bottoms"));
+    for (const category of ["tops", "bottoms"])
+      if (
+        samplePieces.some(
+          (g) => g.category === category && g.moods.includes(mood),
+        )
+      )
+        assert(p.find((x) => x.category === category).moods.includes(mood));
+    if (
+      !samplePieces.some(
+        (g) => g.category === "bottoms" && g.moods.includes(mood),
+      )
+    )
+      assert.match(r.reason, /closest match/);
+    assert.deepEqual(
+      r,
+      pairing(samplePieces, mood, { temperature: 20, rain: 0 }, "2026-10-05"),
+    );
+  }
+  assert.throws(
+    () =>
+      pairing(
+        samplePieces.filter((p) => p.category === "tops"),
+        "casual",
+        null,
+        "2026-10-05",
+      ),
+    /top and one bottom/,
+  );
+});
+test("hot forecast selects light tops and cold forecast adds available layer", () => {
+  const hot = pairing(
+    samplePieces,
+    "athletic",
+    { temperature: 30, rain: 70 },
+    "2026-10-05",
+  );
+  assert(samplePieces.find((g) => g.id === hot.pieces[0]).warmth === 1);
+  assert.match(hot.reason, /umbrella/);
+  const jacket = {
+    id: "jacket",
+    category: "layers",
+    moods: ["professional"],
+    warmth: 3,
+  };
+  const cold = pairing(
+    [...samplePieces, jacket],
+    "professional",
+    { temperature: 10, rain: 0 },
+    "2026-10-05",
+  );
+  assert(cold.pieces.includes("jacket"));
+});
+test("calendar import preserves time zone, recurring weekdays, exclusions, and avoids duplicates", () => {
+  const now = new Date("2026-10-05T04:00:00Z");
+  const ics =
+    "BEGIN:VCALENDAR\nBEGIN:VEVENT\nUID:meeting\nDTSTART;TZID=America/New_York:20261005T090000\nDTEND;TZID=America/New_York:20261005T100000\nRRULE:FREQ=WEEKLY;BYDAY=MO,WE;COUNT=5\nEXDATE;TZID=America/New_York:20261007T090000\nSUMMARY:Team meeting\nEND:VEVENT\nEND:VCALENDAR";
+  const r = parseCalendar(ics, "America/New_York", now);
+  assert.equal(r.events.length, 4);
+  assert.equal(r.events[0].start, "2026-10-05T13:00:00.000Z");
+  assert.equal(r.events[0].end, "2026-10-05T14:00:00.000Z");
+  assert.equal(r.events[0].mood, "professional");
+  assert.equal(new Set(r.events.map((e) => e.source)).size, 4);
+  const dst = parseCalendar(
+    ics.replace("20261005", "20261102").replace("20261007", "20261104"),
+    "America/New_York",
+    now,
+  );
+  assert.equal(dst.events[0].start, "2026-11-02T14:00:00.000Z");
+  assert.throws(() => parseCalendar("random"), /valid/);
+});
+test("private data requires identity and is isolated by owner", async () => {
+  const env = environment();
+  assert.equal((await worker.fetch(req("closet", null), env)).status, 401);
+  const top = await add(env, "alice", "Alice top", "tops"),
+    bottom = await add(env, "alice", "Alice jeans", "bottoms");
+  let r = await worker.fetch(req("closet", "alice"), env);
+  assert.equal((await r.json()).garments.length, 2);
+  r = await worker.fetch(req("closet", "bob"), env);
+  assert.equal((await r.json()).garments.length, 0);
+  assert.equal(
+    (await worker.fetch(req("images/" + top.id, "bob"), env)).status,
+    404,
+  );
+  assert.equal(
+    (await worker.fetch(req("garments/" + top.id, "bob", "DELETE"), env))
+      .status,
+    404,
+  );
+  assert.equal(
+    (
+      await worker.fetch(
+        req("outfits", "bob", "POST", {
+          name: "Stolen",
+          mood: "casual",
+          pieces: [top.id, bottom.id],
+        }),
+        env,
+      )
+    ).status,
+    400,
+  );
+  const o = await worker.fetch(
+    req("outfits", "alice", "POST", {
+      name: "Favorite",
+      mood: "casual",
+      pieces: [top.id, bottom.id],
+    }),
+    env,
+  );
+  assert.equal(o.status, 201);
+  const saved = await o.json();
+  await worker.fetch(req("outfits/" + saved.id, "bob", "DELETE"), env);
+  assert.equal(
+    (await (await worker.fetch(req("closet", "alice"), env)).json()).outfits
+      .length,
+    1,
+  );
+  assert.equal(
+    (await worker.fetch(req("garments/" + top.id, "alice", "DELETE"), env))
+      .status,
+    200,
+  );
+  const after = await (await worker.fetch(req("closet", "alice"), env)).json();
+  assert.equal(after.garments.length, 1);
+  assert.equal(after.outfits.length, 0);
+});
+test("write requests reject foreign origins and missing storage shows a useful error", async () => {
+  const r = new Request("https://closet.test/api/events", {
+    method: "POST",
+    headers: {
+      "oai-authenticated-user-id": "alice",
+      origin: "https://evil.test",
+    },
+    body: "{}",
+  });
+  assert.equal((await worker.fetch(r, environment())).status, 403);
+  const missing = await worker.fetch(req("closet"), {});
+  assert.equal(missing.status, 503);
+  assert.match((await missing.json()).error, /unavailable/);
+});
+test("style preferences persist per mood without erasing location", async () => {
+  const env = environment();
+  await worker.fetch(
+    req("settings", "alice", "PUT", {
+      location: { name: "Philadelphia", lat: 39.95, lon: -75.16 },
+    }),
+    env,
+  );
+  const r = await worker.fetch(
+    req("settings", "alice", "PUT", {
+      vibes: { casual: ["soft", "preppy"], professional: ["minimal"] },
+      boldPatterns: true,
+    }),
+    env,
+  );
+  assert.equal(r.status, 200);
+  const s = await r.json();
+  assert.equal(s.location.name, "Philadelphia");
+  assert.deepEqual(s.vibes.casual, ["soft", "preppy"]);
+  const bad = await worker.fetch(
+    req("settings", "alice", "PUT", { vibes: { casual: ["unknown"] } }),
+    env,
+  );
+  assert.equal(bad.status, 400);
+});
+test("calendar feed validation rejects arbitrary hosts, credentials, ports, and redirects", () => {
+  const good =
+    "https://calendar.google.com/calendar/ical/example%40example.com/private-test/basic.ics";
+  assert.equal(validateFeed(good), good);
+  for (const url of [
+    "http://calendar.google.com/calendar/ical/a/basic.ics",
+    "https://example.com/a.ics",
+    "https://calendar.google.com.evil.test/calendar/ical/a/basic.ics",
+    "https://user:password@calendar.google.com/calendar/ical/a/basic.ics",
+    "https://calendar.google.com:444/calendar/ical/a/basic.ics",
+    "https://calendar.google.com/calendar/ical/a/basic.ics?redirect=evil",
+  ])
+    assert.throws(() => validateFeed(url));
+});
+test("print balance and color harmony rank cohesive combinations without claiming strict rules", () => {
+  assert.equal(colorHarmony("pink", "pink").label, "Tonal palette");
+  assert.equal(colorHarmony("pink", "cream").label, "Grounded palette");
+  assert(
+    printBalance(
+      { pattern: "floral", color: "pink" },
+      { pattern: "solid", color: "cream" },
+    ).score >
+      printBalance(
+        { pattern: "floral", color: "pink" },
+        { pattern: "animal", color: "orange" },
+      ).score,
+  );
+});
+test("AI recognition requires an account connection and validates structured suggestions", async (t) => {
+  const env = environment();
+  const absent = await worker.fetch(
+    req("analyze", "alice", "POST", {
+      image: "data:image/jpeg;base64,/9j/AA==",
+    }),
+    env,
+  );
+  assert.equal(absent.status, 409);
+  env.OPENAI_API_KEY = "sk-test-only";
+  const original = globalThis.fetch;
+  t.after(() => {
+    globalThis.fetch = original;
+  });
+  let called = 0;
+  globalThis.fetch = async (url, options) => {
+    assert.equal(url, "https://api.openai.com/v1/responses");
+    const body = JSON.parse(options.body);
+    assert.equal(body.store, false);
+    assert.equal(body.text.format.type, "json_schema");
+    called++;
+    return new Response(
+      JSON.stringify({
+        output: [
+          {
+            content: [
+              {
+                type: "output_text",
+                text: JSON.stringify({
+                  isGarment: true,
+                  name: "Pink cardigan",
+                  category: "tops",
+                  subtype: "cardigan",
+                  color: "pink",
+                  secondaryColors: [],
+                  pattern: "solid",
+                  fit: "fitted",
+                  length: "cropped",
+                  warmth: 2,
+                  moods: ["casual"],
+                  vibes: ["soft"],
+                  confidence: "high",
+                  note: "Warmth is a visual estimate.",
+                }),
+              },
+            ],
+          },
+        ],
+      }),
+      { headers: { "content-type": "application/json" } },
+    );
+  };
+  const response = await worker.fetch(
+    req("analyze", "alice", "POST", {
+      image: "data:image/jpeg;base64,/9j/AA==",
+    }),
+    env,
+  );
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).subtype, "cardigan");
+  assert.equal(called, 1);
+  const bad = await worker.fetch(
+    req("analyze", "alice", "POST", { image: "https://evil.test/photo.jpg" }),
+    env,
+  );
+  assert.equal(bad.status, 400);
+  assert.equal(called, 1);
+});

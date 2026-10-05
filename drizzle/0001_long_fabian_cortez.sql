@@ -1,0 +1,1 @@
+ALTER TABLE `garments` ADD `attributes` text DEFAULT '{}' NOT NULL;

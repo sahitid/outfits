@@ -1,20 +1,6 @@
-export const moods=['casual','professional','athletic'];
-export const samplePieces=[{category:'tops',moods:['casual'],color:'cream',warmth:3},{category:'tops',moods:['casual','athletic'],color:'white',warmth:1},{category:'tops',moods:['professional','casual'],color:'blue',warmth:2},{category:'layers',moods:['professional'],color:'charcoal',warmth:3},{category:'bottoms',moods:['casual'],color:'indigo',warmth:2},{category:'bottoms',moods:['professional','casual'],color:'beige',warmth:2},{category:'bottoms',moods:['athletic'],color:'black',warmth:1},{category:'tops',moods:['casual','athletic'],color:'green',warmth:2}].map((p,i)=>({...p,id:'sample-'+i}));
-export function pairing(garments,mood,weather,date,variant=0){
- const tops=garments.filter(g=>g.category==='tops'),bottoms=garments.filter(g=>g.category==='bottoms');
- if(!tops.length||!bottoms.length)throw Error('Add at least one top and one bottom to find a complete pairing.');
- const temp=weather?.temperature??19,target=temp>=24?1:temp<=13?3:2;
- const neutral=new Set(['white','cream','beige','black','charcoal','indigo']);
- const combinations=[];for(const t of tops)for(const b of bottoms){const moodScore=(t.moods.includes(mood)?12:0)+(b.moods.includes(mood)?12:0);const warmthScore=weather?-Math.abs(t.warmth-target)*3-Math.abs(b.warmth-Math.min(target,2))*2:0;const colorScore=neutral.has(t.color)||neutral.has(b.color)?3:t.color===b.color?1:0;combinations.push({pieces:[t.id,b.id],score:moodScore+warmthScore+colorScore,matched:t.moods.includes(mood)&&b.moods.includes(mood)})}
- combinations.sort((a,b)=>b.score-a.score||a.pieces.join().localeCompare(b.pieces.join()));
- const best=combinations.filter(c=>c.score>=combinations[0].score-3);const seed=[...date].reduce((a,c)=>a+c.charCodeAt(0),0);const chosen=best[(seed+Math.max(0,variant))%best.length];
- const layer=garments.filter(g=>g.category==='layers'&&(g.moods.includes(mood))&&(temp<16||mood==='professional'&&temp<23)).sort((a,b)=>Math.abs(a.warmth-target)-Math.abs(b.warmth-target))[0];if(layer)chosen.pieces.push(layer.id);
- let reason=chosen.matched?({casual:'An easy top-and-bottom combination with colors that work together.',professional:'A polished pairing for meetings, the office, and a composed first impression.',athletic:'Pieces tagged for movement, paired for an active day.'}[mood]):`The closest ${mood} pairing in your closet. Add more ${mood} pieces for a better match.`;
- if(weather)reason+=temp>=24?' Light pieces help keep warm days comfortable.':temp<=13?layer?' An extra layer adds warmth for the cooler forecast.':' Cooler weather calls for warmth; add a jacket if you have one.':' A balanced choice for mild temperatures.';
- if((weather?.rain??0)>30)reason+=' Rain is possible. Bring an umbrella and choose weather-ready shoes.';
- return {pieces:chosen.pieces,reason,mood};
-}
-export function detectMood(title){return /gym|run\b|workout|yoga|pilates|sport|training|fitness|hike/i.test(title)?'athletic':/meeting|office|interview|presentation|conference|client|work\b|business/i.test(title)?'professional':'casual'}
+export { moods,samplePieces } from './catalog.js';
+export { pairing } from './styling.js';
+export function detectMood(title){return /class|lecture|seminar|study|library|exam/i.test(title)?'study':/gym|run\b|workout|yoga|pilates|sport|training|fitness|hike/i.test(title)?'athletic':/meeting|office|interview|presentation|conference|client|work\b|business/i.test(title)?'professional':'casual'}
 function inZone(y,m,d,h,min,sec,zone){const wall=Date.UTC(y,m-1,d,h,min,sec);let value=wall;const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});for(let i=0;i<3;i++){const p=Object.fromEntries(fmt.formatToParts(new Date(value)).map(p=>[p.type,p.value]));const repr=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute,+p.second);value+=wall-repr}return new Date(value)}
 function icsDate(value,zone){const m=value.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?)?(Z)?$/);if(!m)throw Error('Unsupported calendar date.');const [y,mo,d,h,mi,s]=[+m[1],+m[2],+m[3],m[4]?+m[4]:9,+(m[5]||0),+(m[6]||0)];return m[7]?new Date(Date.UTC(y,mo-1,d,h,mi,s)):inZone(y,mo,d,h,mi,s,zone)}
 export function parseCalendar(ics,timezone='UTC',now=new Date()){
