@@ -125,12 +125,12 @@ test("React closet supports styling, saved outfits, per-mood vibes, and photo-fi
   );
   tools.get("open_vibe_picker").execute({ mood: "professional" });
   await wait();
-  assert.match(w.document.body.textContent, /For professional/);
+  assert([...w.document.querySelectorAll('button[aria-pressed="true"]')].some(b=>b.textContent === "Professional"));
   btn("My closet").click();
   await wait();
   btn("Add clothing").click();
   await wait();
-  assert.match(w.document.querySelector("dialog").textContent, /One photo/);
+  assert.match(w.document.querySelector("dialog").textContent, /Add clothing/);
   assert.equal(
     w.document.querySelectorAll("dialog input[type=file]").length,
     2,

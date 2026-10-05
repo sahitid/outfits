@@ -463,3 +463,12 @@ dialog[open] { animation:dialog-enter 180ms cubic-bezier(.2,.7,.2,1); border-rad
 .vibe-photo { width:100%; height:100%; background-image:none; overflow:hidden; }
 nav[aria-label="Mobile navigation"] button { font-size:11px; line-height:1.35; }
 @media(max-width:650px) { .board-heading { padding-bottom:20px; } .board-toolbar { padding-bottom:14px; } }
+/* Compact utility layout. */
+.closet-editorial { min-height:0; grid-template-columns:1fr; }
+.editorial-composition { display:none; }
+.editorial-intro { padding:0 0 26px; flex-direction:row; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+.editorial-intro h1 { font-size:36px; line-height:1.2; margin:0; letter-spacing:-.045em; }
+.editorial-actions { margin:0; }
+.board-heading { padding:0 0 26px; }
+.board-heading h1 { margin:0; font-size:36px; }
+.mood-board-selector { margin-bottom:26px; }

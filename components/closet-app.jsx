@@ -197,7 +197,7 @@ function Dialog({ heading, kicker = "YOUR CLOSET", children, onClose }) {
       <div className="p-6 sm:p-8">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <p className="eyebrow">{kicker}</p>
+            
             <h2 className="mt-2 text-3xl font-medium">{heading}</h2>
           </div>
           <button className="icon-btn" onClick={onClose} aria-label="Close">
@@ -537,14 +537,12 @@ export default function ClosetApp() {
           <Sparkles size={22} />
         </span>
         <div>
-          <h2 className="text-lg font-semibold">The styling room</h2>
-          <p className="mt-1 text-xs text-muted">
-            A new perspective on your pieces.
-          </p>
+          <h2 className="text-lg font-semibold">Style an outfit</h2>
+          
         </div>
       </div>
       <div className="my-5 border-t border-line" />
-      <p className="eyebrow mb-3">What's the mood?</p>
+      <p className="eyebrow mb-3">Mood</p>
       <select
         className="input"
         aria-label="Outfit mood"
@@ -577,7 +575,7 @@ export default function ClosetApp() {
         ref={stageRef}
         className="fit-stage relative min-h-[260px] rounded-xl border border-dashed border-[#dddddd] p-4"
       >
-        <p className="eyebrow text-[11px]">The fit check</p>
+        <p className="eyebrow text-[11px]">Outfit</p>
         {selection.length ? (
           <div className="grid grid-cols-2 gap-2 pt-4">
             {selection.map((id) => {
@@ -607,13 +605,9 @@ export default function ClosetApp() {
           <div className="py-10 text-center">
             <Hanger size={46} className="mx-auto text-[#555555]" />
             <h3 className="mt-5 text-base font-medium">
-              Your next look starts here.
+              Select pieces
             </h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted">
-              Pull a piece off the rail,
-              <br />
-              or find a new favorite pairing.
-            </p>
+            <p className="mt-2 text-sm text-muted">Drag or tap to add.</p>
           </div>
         )}
         <p className="mt-4 flex items-center justify-center gap-1 text-xs text-[#555555]">
@@ -729,25 +723,23 @@ export default function ClosetApp() {
             <>
               <section className="closet-editorial">
                 <div className="editorial-intro">
-                  <p className="eyebrow">THE PERSONAL WARDROBE EDIT</p>
-                  <h1>Good clothes.<br/><em>Great together.</em></h1>
-                  <p className="editorial-description">A fresh eye on everything you own.<br/>Find your mood. Make a look. Wear it your way.</p>
+                  
+                  <h1>My closet</h1>
                   <div className="editorial-actions">
                     <Button primary onClick={() => setModal({type:"upload"})}><Plus size={17}/> Add clothing</Button>
-                    <button className="editorial-text-link" onClick={()=>go("vibes")}>Find your aesthetic <span aria-hidden="true">↗︎</span></button>
+                    <button className="editorial-text-link" onClick={()=>go("vibes")}>Vibes <span aria-hidden="true">↗︎</span></button>
                   </div>
-                  <div className="editorial-footnote"><span className="status-dot"/> YOUR CLOSET, YOUR POINT OF VIEW</div>
                 </div>
                 <div className="editorial-composition">
-                  <div className="composition-caption"><span>THE CLOSET STUDY</span><span>01 / EVERYDAY</span></div>
+                  
                   <div className="composition-pieces" aria-label={isDemo ? "Sample wardrobe inspiration" : "From your wardrobe"}>
                     {[(pieces.find(p=>p.category==="tops") || pieces[0]),(pieces.find(p=>p.category==="bottoms") || pieces[1])].filter(Boolean).map((p,i)=><button key={p.id} className={"composition-piece piece-"+i} onClick={()=>{choose(p.id,true);document.getElementById("wardrobe")?.scrollIntoView({behavior:"smooth",block:"start"});}} aria-label={"Style "+p.name}><Art piece={p}/><span>{p.name} <span aria-hidden="true">↗︎</span></span></button>)}
                   </div>
-                  <div className="composition-bottom"><span>{isDemo ? "A preview of the possibilities" : "Already yours. Newly inspired."}</span><span>{isDemo ? "SAMPLE EDIT" : "YOUR COLLECTION"}</span></div>
+                  
                 </div>
               </section>
               <button className="daily-dispatch" onClick={()=>go("today")}>
-                <span className="dispatch-label"><CloudSun size={20}/> THE DAILY EDIT</span>
+                <span className="dispatch-label"><CloudSun size={20}/> TODAY</span>
                 <span className="dispatch-weather">{loc.name} <span aria-hidden="true">/</span> {weatherLabel}</span>
                 <span className="dispatch-cta">Style my day <span aria-hidden="true">↗︎</span></span>
               </button>
@@ -765,8 +757,8 @@ export default function ClosetApp() {
                         {loading
                           ? "Opening your closet…"
                           : isDemo
-                            ? "A cute sample rail. Add your own pieces to make it yours."
-                            : "All your pieces, with a little more possibility."}
+                            ? "Sample pieces"
+                            : ""}
                       </p>
                     </div>
                     <div className="flex rounded-lg border border-line bg-white p-1">
@@ -859,14 +851,11 @@ export default function ClosetApp() {
                       ))}
                     </div>
                   ) : (
-                    <Empty title="A little room for something new.">
+                    <Empty title="No matches">
                       No pieces match this filter.
                     </Empty>
                   )}
-                  <p className="mt-4 flex items-center justify-center gap-2 text-center text-xs text-muted">
-                    <Hanger size={14} />
-                    Pull a piece off its hanger, or tap to add it to your look.
-                  </p>
+                  
                 </section>
                 {stage}
               </div>
@@ -885,7 +874,7 @@ export default function ClosetApp() {
             <>
               <PageHeading
                 eyebrow="GOOD COMBINATIONS, KEPT"
-                title="Your outfit collection."
+                title="Saved outfits"
                 subtitle="The looks you love, ready for a repeat."
                 action={
                   <Button primary onClick={() => go("closet")}>
@@ -939,8 +928,8 @@ export default function ClosetApp() {
                   ))}
                 </div>
               ) : (
-                <Empty icon={Bookmark} title="Your next favorite starts here.">
-                  Save a pairing from your closet to keep it for another day.
+                <Empty icon={Bookmark} title="No saved outfits">
+                  Save an outfit from your closet.
                 </Empty>
               )}
             </>
@@ -949,7 +938,7 @@ export default function ClosetApp() {
             <>
               <PageHeading
                 eyebrow="A LITTLE LESS DECIDING"
-                title="Made for your day."
+                title="Today"
                 subtitle="Your plans, the forecast, and your favorite version of you."
                 action={
                   <Button onClick={() => setModal({ type: "location" })}>
@@ -1031,7 +1020,7 @@ export default function ClosetApp() {
                     )}
                     {result && (
                       <>
-                        <p className="subtle">{result.reason}</p>
+                        <details className="text-sm"><summary className="cursor-pointer">Why this outfit</summary><p className="subtle mt-2">{result.reason}</p></details>
                         <p className="mt-3 text-sm text-[#555555]">
                           {result.tips}
                         </p>
@@ -1147,10 +1136,6 @@ export default function ClosetApp() {
               }}
             />
           )}
-          <footer className="mt-9 flex flex-wrap justify-between gap-3 border-t border-line pt-5 text-xs text-[#555555]">
-            <span className="footer-wordmark">outfits.</span>
-            <span>Wear what makes you, you.</span>
-          </footer>
         </main>
       </div>
       <nav
@@ -1183,18 +1168,18 @@ export default function ClosetApp() {
         <Dialog
           heading={
             {
-              tryon: "Your look, on you.",
+              tryon: "Preview on me",
               wear: "Log an outfit.",
-              upload: "One photo. We’ll take it from here.",
-              save: "Keep this combination.",
+              upload: "Add clothing",
+              save: "Save outfit",
               details: modal.piece?.name,
               theory: "Why this pairing works.",
               google: "Connect Google Calendar.",
-              ai: "Meet your AI stylist.",
-              location: "Dress for your forecast.",
-              event: "What’s on the agenda?",
-              import: "Bring your calendar along.",
-              account: "A closet, all yours.",
+              ai: "Connect AI",
+              location: "Location",
+              event: "Add plan",
+              import: "Import calendar",
+              account: "Account",
               deleteOutfit: "Remove this outfit?",
               deleteEvent: "Remove this plan?",
               deletePiece: "Remove this piece?",
@@ -1423,11 +1408,11 @@ function PageHeading({ eyebrow, title: heading, subtitle, action }) {
   return (
     <div className="mb-7 flex flex-wrap items-center justify-between gap-5">
       <div>
-        <p className="eyebrow">{eyebrow}</p>
+        
         <h1 className="mt-3 text-4xl font-medium tracking-[-1.5px]">
           {heading}
         </h1>
-        <p className="mt-3 text-sm text-muted sm:text-base">{subtitle}</p>
+        
       </div>
       {action}
     </div>
@@ -1456,10 +1441,9 @@ function Vibes({ mood, setMood, settings, saveSettings, notify }) {
   const [search,setSearch] = useState("");
   const boards = AESTHETICS.filter(a => (tab !== "saved" || selected.includes(a.id)) && (a.name+" "+a.sub).toLowerCase().includes(search.toLowerCase()));
   return <section className="vibes-page">
-    <div className="board-heading"><div><p className="eyebrow">COLLECT WHAT FEELS LIKE YOU</p><h1>Your kind of <em>inspiration.</em></h1><p>Save the aesthetics you love. We’ll bring them into your outfits.</p></div><span className="board-count"><Bookmark size={16}/>{selected.length} / 3 saved for this mood</span></div>
-    <div className="board-toolbar"><div className="board-tabs" aria-label="Inspiration views"><button onClick={()=>setTab("discover")} aria-pressed={tab==="discover"} className={cx(tab==="discover"&&"active")}>Discover</button><button onClick={()=>setTab("saved")} aria-pressed={tab==="saved"} className={cx(tab==="saved"&&"active")}>Saved for this mood <span>{selected.length}</span></button></div><label className="board-search"><Search size={17}/><input placeholder="Find your aesthetic" aria-label="Search aesthetics" value={search} onChange={e=>setSearch(e.target.value)}/>{search&&<button onClick={()=>setSearch("")} aria-label="Clear search"><X size={15}/></button>}</label></div>
-    <div className="mood-board-selector"><span className="eyebrow">DRESSING FOR</span><div>{MOODS.map(m=><button key={m.id} aria-pressed={mood===m.id} onClick={()=>setMood(m.id)} className={cx("chip",mood===m.id&&"chip-selected")}>{m.label}</button>)}</div></div>
-    <p className="board-context">For <strong>{MOODS.find(m=>m.id===mood)?.label.toLowerCase()}</strong>, your vibe is {selected.map(id=>AESTHETICS.find(a=>a.id===id)?.name.toLowerCase()).join(" + ") || "open to anything"}.</p>
+    <div className="board-heading"><div><h1>Vibes</h1></div><span className="board-count"><Bookmark size={16}/>{selected.length} / 3 saved</span></div>
+    <div className="board-toolbar"><div className="board-tabs" aria-label="Inspiration views"><button onClick={()=>setTab("discover")} aria-pressed={tab==="discover"} className={cx(tab==="discover"&&"active")}>Discover</button><button onClick={()=>setTab("saved")} aria-pressed={tab==="saved"} className={cx(tab==="saved"&&"active")}>Saved for this mood <span>{selected.length}</span></button></div><label className="board-search"><Search size={17}/><input placeholder="Vibes" aria-label="Search aesthetics" value={search} onChange={e=>setSearch(e.target.value)}/>{search&&<button onClick={()=>setSearch("")} aria-label="Clear search"><X size={15}/></button>}</label></div>
+    <div className="mood-board-selector"><span className="eyebrow">MOOD</span><div>{MOODS.map(m=><button key={m.id} aria-pressed={mood===m.id} onClick={()=>setMood(m.id)} className={cx("chip",mood===m.id&&"chip-selected")}>{m.label}</button>)}</div></div>
     <div className="pin-grid" key={tab+search}>
       {boards.map(a=><article key={a.id} className={cx("inspiration-pin",selected.includes(a.id)&&"pin-saved")}>
         <div className={cx("pin-image", "pin-height-"+(a.image%3))}>
@@ -1469,12 +1453,12 @@ function Vibes({ mood, setMood, settings, saveSettings, notify }) {
           <a className="pin-explore" href={a.pinterest} target="_blank" rel="noreferrer" aria-label={"Explore "+a.name+" on Pinterest"}>Pinterest <ExternalLink size={13}/></a>
           <span className="pin-number">0{a.image+1}</span>
         </div>
-        <div className="pin-caption"><div><h2>{a.name}</h2><p>{a.sub}</p></div><div className="pin-palette" aria-label="Palette">{a.colors.slice(0,3).map(c=><span key={c} title={c} style={{background:COLORS[c]}}/>)}</div></div>
+        <div className="pin-caption"><div><h2>{a.name}</h2></div><div className="pin-palette" aria-label="Palette">{a.colors.slice(0,3).map(c=><span key={c} title={c} style={{background:COLORS[c]}}/>)}</div></div>
       </article>)}
     </div>
-    {!boards.length&&<Empty icon={Bookmark} title={search?"No matching aesthetics.":"Make this board yours."}>{search?"Try a different search.":"Explore Discover and save up to three aesthetics for this mood."}</Empty>}
-    <div className="board-preferences"><div><h3>Room for a little pattern play?</h3><p>Let your stylist mix prints with a shared color palette.</p></div><label className="switch-control"><input aria-label="Allow bolder print mixing" type="checkbox" checked={!!settings.boldPatterns} onChange={async e=>{try{await saveSettings({boldPatterns:e.target.checked});}catch(err){notify(err.message);}}}/><span/></label></div>
-    <p className="board-disclosure">Original AI-created inspiration. Pinterest links open more ideas; saving here shapes your Outfits recommendations.</p>
+    {!boards.length&&<Empty icon={Bookmark} title={search?"No matching aesthetics.":"No saved vibes"}>{search?"Try a different search.":"Save up to three vibes."}</Empty>}
+    <div className="board-preferences"><div><h3>Mix prints</h3></div><label className="switch-control"><input aria-label="Allow bolder print mixing" type="checkbox" checked={!!settings.boldPatterns} onChange={async e=>{try{await saveSettings({boldPatterns:e.target.checked});}catch(err){notify(err.message);}}}/><span/></label></div>
+    <p className="board-disclosure">AI-created images · Pinterest links open externally.</p>
   </section>;
 }
 
@@ -1563,7 +1547,7 @@ function CalendarView({
     <>
       <PageHeading
         eyebrow="STYLE AROUND YOUR LIFE"
-        title="Your day, considered."
+        title="Plans"
         subtitle="From the first lecture to the last plan."
         action={
           <Button primary onClick={add}>
@@ -1674,8 +1658,8 @@ function CalendarView({
           </div>
         </div>
       ) : (
-        <Empty icon={CalendarDays} title="A day worth dressing for.">
-          Connect your calendar or add a plan. We’ll take the outfit from there.
+        <Empty icon={CalendarDays} title="No plans">
+          Connect a calendar or add a plan.
         </Empty>
       )}
     </>
@@ -1695,7 +1679,7 @@ function SettingsView({
     <>
       <PageHeading
         eyebrow="ALL THE LITTLE DETAILS"
-        title="Make it yours."
+        title="Connections"
         subtitle="Connect your day, your weather, and a little outfit intelligence."
       />
       <div className="grid gap-5 xl:grid-cols-3">
@@ -1728,8 +1712,8 @@ function SettingsView({
             icon: Sparkles,
             connected: connections.ai,
             description: connections.ai
-              ? "Photo recognition and AI outfit advice are ready."
-              : "Let AI recognize clothing photos and explain cute outfit pairings.",
+              ? "Photo recognition and outfit advice."
+              : "Photo recognition and outfit advice.",
             action: connections.ai ? "Update connection" : "Connect AI",
             run: connectAI,
             type: "ai",
@@ -1764,13 +1748,10 @@ function SettingsView({
       </div>
       <div className="card mt-6 p-6">
         <h2 className="text-lg font-semibold">
-          Thoughtful styling, with room to play.
+          Style notes
         </h2>
         <p className="subtle mt-3">
-          Outfits considers color harmony, pattern balance, garment proportions,
-          and your saved vibes. AI suggestions can be edited, and warmth is
-          always an estimate. No rules about your body—just more ways to enjoy
-          your clothes.
+          Pairings use color, pattern, proportions, and saved vibes. Warmth is estimated.
         </p>
         <div className="mt-4 flex flex-wrap gap-4">
           {STYLE_SOURCES.map((s) => (
@@ -1883,14 +1864,13 @@ function UploadForm({ ai, onAIConnected, onSaved }) {
         )}
         <h3 className="text-lg font-medium">
           {scan
-            ? "Getting to know your piece…"
+            ? "Scanning…"
             : photo
-              ? "A new piece of possibility."
-              : "Show us your piece."}
+              ? "Review photo"
+              : "Add a photo"}
         </h3>
         <p className="subtle mx-auto mt-2 max-w-sm">
-          One garment, a plain background, and good light. AI will suggest the
-          details for you to review.
+          One garment. Plain background. Good light.
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-2">
           <Button onClick={() => input.current.click()} disabled={scan}>
@@ -2583,15 +2563,15 @@ function ConfirmDelete({ type, onConfirm, onCancel }) {
 
 function WearForm({initial,onSaved}) {
   const [date,setDate]=useState(initial.date), [busy,setBusy]=useState(false), [error,setError]=useState("");
-  return <form onSubmit={async e=>{e.preventDefault();setBusy(true);try{await post("wear",{date,pieces:initial.pieces,name:initial.name});await onSaved();}catch(e){setError(e.message);}finally{setBusy(false);}}} className="space-y-5"><p className="subtle">Log what you actually wore. Your stylist will favor fresh combinations over repeats from the last two weeks.</p><label className="field">Date worn<input required className="input" type="date" max={dayKey()} value={date} onChange={e=>setDate(e.target.value)}/></label>{error && <p role="alert">{error}</p>}<Button primary disabled={busy} type="submit">{busy?"Saving…":"Add to outfit calendar"}</Button></form>;
+  return <form onSubmit={async e=>{e.preventDefault();setBusy(true);try{await post("wear",{date,pieces:initial.pieces,name:initial.name});await onSaved();}catch(e){setError(e.message);}finally{setBusy(false);}}} className="space-y-5"><p className="subtle">Recent outfits repeat less often.</p><label className="field">Date worn<input required className="input" type="date" max={dayKey()} value={date} onChange={e=>setDate(e.target.value)}/></label>{error && <p role="alert">{error}</p>}<Button primary disabled={busy} type="submit">{busy?"Saving…":"Add to outfit calendar"}</Button></form>;
 }
 function WearCalendar({history,find,remove}) {
   const [month,setMonth]=useState(()=>dayKey().slice(0,7));
   const first=new Date(month+"-01T12:00:00"), days=new Date(first.getFullYear(),first.getMonth()+1,0).getDate();
   const shift=n=>{const d=new Date(first);d.setMonth(d.getMonth()+n);setMonth(dayKey(d).slice(0,7));};
-  return <section className="mb-10"><div className="mb-5 flex flex-wrap items-center justify-between gap-4"><div><p className="eyebrow">YOUR OUTFIT DIARY</p><h1 className="mt-2 text-3xl font-semibold">What you wore.</h1><p className="subtle mt-2">A little outfit memory. A lot more variety.</p></div><div className="flex items-center gap-3"><Button aria-label="Previous month" onClick={()=>shift(-1)}>←</Button><span>{first.toLocaleDateString(undefined,{month:"long",year:"numeric"})}</span><Button aria-label="Next month" onClick={()=>shift(1)}>→</Button></div></div><div className="card overflow-x-auto"><div className="grid min-w-[560px] grid-cols-7">{["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d=><div key={d} className="border-b border-line p-3 text-xs text-muted">{d}</div>)}{Array.from({length:first.getDay()},(_,i)=><div key={'blank'+i} className="border-b border-r border-line bg-paper"/>)}{Array.from({length:days},(_,i)=>{const date=month+'-'+String(i+1).padStart(2,'0');return <div key={date} className={cx("min-h-[120px] border-b border-r border-line p-2",date===dayKey()&&"bg-paper")}><span className={cx("inline-flex h-6 w-6 items-center justify-center text-xs rounded-full",date===dayKey()&&"bg-ink text-white")}>{i+1}</span>{history.filter(w=>w.date===date).map(w=><div key={w.id} className="mt-2"><div className="flex h-16">{w.pieces.map(id=><Art key={id} piece={find(id)}/>)}</div><p className="mt-1 text-[10px] leading-tight">{w.name}</p><button className="mt-1 text-[10px] text-muted underline" onClick={()=>remove(w.id)} aria-label={'Remove wear log '+w.name+' '+date}>Undo log</button></div>)}</div>;})}</div></div>{!history.length && <p className="subtle mt-3">Tap “Wore this” on a saved outfit or daily recommendation to start your diary.</p>}</section>;
+  return <section className="mb-10"><div className="mb-5 flex flex-wrap items-center justify-between gap-4"><div><h1 className="mt-2 text-3xl font-semibold">Worn outfits</h1></div><div className="flex items-center gap-3"><Button aria-label="Previous month" onClick={()=>shift(-1)}>←</Button><span>{first.toLocaleDateString(undefined,{month:"long",year:"numeric"})}</span><Button aria-label="Next month" onClick={()=>shift(1)}>→</Button></div></div><div className="card overflow-x-auto"><div className="grid min-w-[560px] grid-cols-7">{["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d=><div key={d} className="border-b border-line p-3 text-xs text-muted">{d}</div>)}{Array.from({length:first.getDay()},(_,i)=><div key={'blank'+i} className="border-b border-r border-line bg-paper"/>)}{Array.from({length:days},(_,i)=>{const date=month+'-'+String(i+1).padStart(2,'0');return <div key={date} className={cx("min-h-[120px] border-b border-r border-line p-2",date===dayKey()&&"bg-paper")}><span className={cx("inline-flex h-6 w-6 items-center justify-center text-xs rounded-full",date===dayKey()&&"bg-ink text-white")}>{i+1}</span>{history.filter(w=>w.date===date).map(w=><div key={w.id} className="mt-2"><div className="flex h-16">{w.pieces.map(id=><Art key={id} piece={find(id)}/>)}</div><p className="mt-1 text-[10px] leading-tight">{w.name}</p><button className="mt-1 text-[10px] text-muted underline" onClick={()=>remove(w.id)} aria-label={'Remove wear log '+w.name+' '+date}>Undo log</button></div>)}</div>;})}</div></div>{!history.length && <p className="subtle mt-3">Tap “Wore this” to log an outfit.</p>}</section>;
 }
 function TryOn({pieces,demo,ai,connect}) {
   const [photo,setPhoto]=useState(null),[result,setResult]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState("");
-  return <div className="space-y-5"><p className="subtle">See an AI styling preview with your own photo and clothing. Your photo is sent to OpenAI to generate this preview; Outfits does not save it. AI may change details. This does not predict size or fit.</p>{!ai ? <Button primary onClick={connect}>Connect AI to preview</Button> : demo ? <p className="rounded-xl bg-paper p-5">Upload your own clothing and select a top and bottom first. Previews use their actual photos.</p> : <><label className="field">Your fully clothed photo<input type="file" accept="image/jpeg,image/png,image/webp" className="input" disabled={busy} onChange={e=>{const f=e.target.files?.[0];setError("");setResult(null);if(!f)return;if(f.size>2900000 || !['image/jpeg','image/png','image/webp'].includes(f.type)){setError("Choose a JPEG, PNG or WebP under 3 MB.");setPhoto(null);return;}const r=new FileReader();r.onload=()=>setPhoto(r.result);r.readAsDataURL(f);}}/></label>{photo && <img src={photo} alt="Your reference photo" className="max-h-64 w-full rounded-xl object-contain bg-paper"/>}<p className="text-xs text-muted">Use a clear full-length photo of yourself. Height and weight aren’t needed for a visual preview. Each generation is billed to your connected OpenAI account.</p><Button primary disabled={!photo||busy} onClick={async()=>{setBusy(true);setError("");try{const r=await post("tryon",{image:photo,pieces});setResult(r.image);}catch(e){setError(e.message);}finally{setBusy(false);}}}>{busy?"Creating your preview… this can take a few minutes":"Generate my preview"}</Button></>}{error&&<p role="alert">{error}</p>}{result&&<div><p className="eyebrow mb-3">AI STYLING PREVIEW</p><img src={result} alt="AI-generated outfit preview" className="w-full rounded-xl"/><a className="btn mt-4" href={result} download="outfits-preview.png">Download preview</a></div>}</div>;
+  return <div className="space-y-5"><p className="subtle">Photo sent to OpenAI; not saved by Outfits. AI previews don’t predict fit.</p>{!ai ? <Button primary onClick={connect}>Connect AI to preview</Button> : demo ? <p className="rounded-xl bg-paper p-5">Upload your own clothing and select a top and bottom first. Previews use their actual photos.</p> : <><label className="field">Your fully clothed photo<input type="file" accept="image/jpeg,image/png,image/webp" className="input" disabled={busy} onChange={e=>{const f=e.target.files?.[0];setError("");setResult(null);if(!f)return;if(f.size>2900000 || !['image/jpeg','image/png','image/webp'].includes(f.type)){setError("Choose a JPEG, PNG or WebP under 3 MB.");setPhoto(null);return;}const r=new FileReader();r.onload=()=>setPhoto(r.result);r.readAsDataURL(f);}}/></label>{photo && <img src={photo} alt="Your reference photo" className="max-h-64 w-full rounded-xl object-contain bg-paper"/>}<p className="text-xs text-muted">Use a full-length photo. Generation is billed to your OpenAI account.</p><Button primary disabled={!photo||busy} onClick={async()=>{setBusy(true);setError("");try{const r=await post("tryon",{image:photo,pieces});setResult(r.image);}catch(e){setError(e.message);}finally{setBusy(false);}}}>{busy?"Creating your preview… this can take a few minutes":"Generate my preview"}</Button></>}{error&&<p role="alert">{error}</p>}{result&&<div><p className="eyebrow mb-3">AI STYLING PREVIEW</p><img src={result} alt="AI-generated outfit preview" className="w-full rounded-xl"/><a className="btn mt-4" href={result} download="outfits-preview.png">Download preview</a></div>}</div>;
 }
