@@ -89,15 +89,9 @@ function Art({ piece }) {
   return (
     <div className="garment-art">
       {piece.atlas !== undefined ? (
-        <div
-          role="img"
-          aria-label={piece.name}
-          className={cx("atlas-art", piece.legacy && "legacy")}
-          style={{
-            "--x": `${((piece.atlas % 4) * 100) / 3}%`,
-            "--y": `${Math.floor(piece.atlas / 4) * (piece.legacy ? 100 : 50)}%`,
-          }}
-        />
+        <svg className="atlas-art-svg" role="img" aria-label={piece.name} viewBox={(() => {if(piece.legacy)return `${(piece.atlas%4)*443.5} ${Math.floor(piece.atlas/4)*443.5} 443.5 443.5`;return [[8,10,350,335],[390,10,326,335],[748,25,320,305],[1122,18,300,320],[12,350,350,325],[390,350,330,324],[747,377,326,276],[1107,361,325,315],[8,731,355,276],[425,677,260,398],[739,732,333,277],[1155,676,230,400]][piece.atlas].join(" ");})()} preserveAspectRatio="xMidYMid meet" style={{width:"100%",height:"100%",overflow:"hidden"}}>
+          <image href={piece.legacy?"/garments.png":"/wardrobe.png"} width={piece.legacy?1774:1448} height={piece.legacy?887:1086}/>
+        </svg>
       ) : (
         <img
           src={"/api/images/" + encodeURIComponent(piece.id)}
@@ -233,7 +227,7 @@ function GarmentTile({ piece, selected, onSelect, onDetails, stageRef, grid }) {
         whileHover={
           reduced ? {} : { rotate: piece.atlas % 2 === 0 ? -3 : 3, y: -3 }
         }
-        whileDrag={{ scale: 1.09, rotate: 5, zIndex: 90 }}
+        whileDrag={reduced ? { zIndex: 90 } : { scale: 1.06, rotate: 4, zIndex: 90 }}
         transition={{ type: "spring", stiffness: 310, damping: 19 }}
         onDragStart={() => {
           dragged.current = true;
@@ -270,7 +264,7 @@ function GarmentTile({ piece, selected, onSelect, onDetails, stageRef, grid }) {
       </motion.div>
       <div
         className={cx(
-          "relative rounded-lg border bg-white/85 p-2.5",
+          "garment-caption relative rounded-lg border bg-white/85 p-2.5",
           selected ? "border-[#dddddd]" : "border-line",
         )}
       >
@@ -537,15 +531,15 @@ export default function ClosetApp() {
     ? `${Math.round((weather.temperature * 9) / 5 + 32)}°F · ${weather.description}`
     : "Philadelphia forecast";
   const stage = (
-    <aside className="card p-5 xl:p-6 lg:sticky lg:top-6">
+    <aside className="styling-panel card p-5 xl:p-6 lg:sticky lg:top-6">
       <div className="flex items-start gap-3">
         <span className="rounded-xl bg-leaf p-2.5 text-[#555555]">
           <Sparkles size={22} />
         </span>
         <div>
-          <h2 className="text-lg font-semibold">A little outfit magic</h2>
+          <h2 className="text-lg font-semibold">The styling room</h2>
           <p className="mt-1 text-xs text-muted">
-            Your clothes. Your kind of cute.
+            A new perspective on your pieces.
           </p>
         </div>
       </div>
@@ -613,7 +607,7 @@ export default function ClosetApp() {
           <div className="py-10 text-center">
             <Hanger size={46} className="mx-auto text-[#555555]" />
             <h3 className="mt-5 text-base font-medium">
-              Good things go together.
+              Your next look starts here.
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-muted">
               Pull a piece off the rail,
@@ -661,7 +655,7 @@ export default function ClosetApp() {
             setUseAI(e.target.checked);
           }}
           aria-label="Use AI stylist"
-          className="accent-[#314b38]"
+          className="accent-black"
         />
       </label>
       <Button
@@ -706,97 +700,20 @@ export default function ClosetApp() {
   );
   return (
     <div className="min-h-screen">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[215px] flex-col border-r border-line bg-white px-5 py-8 lg:flex">
-        <a
-          href="/"
-          className="flex items-center gap-2.5 px-2 text-[34px] font-semibold tracking-[-2px]"
-        >
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink pb-1 pr-1 font-serif text-[36px] font-normal italic text-white">
-            <Hanger size={25} />
-          </span>
-          Outfits
-        </a>
-        <p className="eyebrow mt-6 px-2 text-[10px] tracking-[.1em]">
-          YOUR EVERYDAY, STYLED
-        </p>
-        <nav className="mt-10 space-y-1.5" aria-label="Main navigation">
-          {nav.map(([v, label, Icon]) => (
-            <button
-              key={v}
-              onClick={() => go(v)}
-              className={cx("nav-item w-full", view === v && "nav-active")}
-            >
-              <Icon size={20} />
-              {label}
-              {v === "closet" && (
-                <span className="ml-auto rounded bg-[#f5f5f5] px-1.5 py-.5 text-xs">
-                  {pieces.length}
-                </span>
-              )}
-            </button>
-          ))}
-        </nav>
-        <div className="mt-auto">
-          <div className="mx-3 my-7">
-            <Sparkles size={21} className="text-[#555555]" />
-            <p className="mt-3 text-sm leading-relaxed text-[#555555]">
-              A little less deciding.
-              <br />A little more you.
-            </p>
+      <header className="site-masthead">
+        <div className="masthead-inner">
+          <a href="/" className="wordmark" aria-label="Outfits home">outfits<span className="wordmark-dot">.</span></a>
+          <nav className="desktop-nav" aria-label="Main navigation">
+            {nav.map(([v,label]) => <button key={v} aria-current={view===v ? "page" : undefined} onClick={()=>go(v)} className={cx("editorial-nav",view===v&&"is-active")}>{label}</button>)}
+          </nav>
+          <div className="masthead-tools">
+            <button className="icon-btn" onClick={()=>go("settings")} aria-label="Connections"><Settings2 size={20}/></button>
+            <button className="profile-button" onClick={()=>setModal({type:"account"})} aria-label="Your account">{(data.user?.name || "O").slice(0,1).toUpperCase()}</button>
           </div>
-          <button
-            className={cx(
-              "nav-item w-full",
-              view === "settings" && "nav-active",
-            )}
-            onClick={() => go("settings")}
-          >
-            <Settings2 size={20} />
-            Connections
-          </button>
-          <button
-            className="mt-5 flex w-full items-center gap-3 border-t border-line pt-5 text-left"
-            onClick={() => setModal({ type: "account" })}
-          >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose text-sm text-[#555555]">
-              {(data.user?.name || data.user?.email || "F")
-                .slice(0, 1)
-                .toUpperCase()}
-            </span>
-            <span className="min-w-0">
-              <strong className="block truncate text-sm font-medium">
-                {data.user?.name?.split(" ")[0] || "Your closet"}
-              </strong>
-              <span className="block truncate text-xs text-muted">
-                Private, just for you
-              </span>
-            </span>
-          </button>
         </div>
-      </aside>
-      <div className="lg:ml-[215px]">
-        <header className="flex h-[74px] items-center justify-between border-b border-line bg-white/70 px-5 text-sm md:px-9">
-          <p className="text-muted">
-            Your wardrobe <span className="mx-2 text-[#555555]">/</span>
-            <span className="text-ink">
-              {nav.find((n) => n[0] === view)?.[1] || "Connections"}
-            </span>
-          </p>
-          <div className="flex items-center gap-4">
-            <span className="hidden items-center gap-1.5 text-xs text-muted sm:flex">
-              <LockKeyhole size={13} />
-              Private closet
-            </span>
-            <button
-              className="icon-btn"
-              onClick={() => go("settings")}
-              aria-label="Connections"
-            >
-              <Settings2 size={19} />
-            </button>
-          </div>
-        </header>
-        <main className="mx-auto max-w-[1560px] px-4 pb-28 pt-7 sm:px-7 md:px-9 lg:pb-10">
+      </header>
+      <div>
+        <main key={view} className="page-transition page-shell mx-auto max-w-[1560px] px-4 pb-28 pt-7 sm:px-7 md:px-9 lg:pb-10">
           {error && (
             <div
               role="alert"
@@ -810,44 +727,32 @@ export default function ClosetApp() {
           )}
           {view === "closet" && (
             <>
-              <div className="mb-7 flex flex-wrap items-center justify-between gap-5">
-                <div>
-                  <p className="eyebrow">GOOD STYLE STARTS HERE</p>
-                  <h1 className="mt-3 text-4xl font-medium tracking-[-1.5px] sm:text-[42px]">
-                    Your closet. More you.
-                  </h1>
-                  <p className="mt-3 text-sm text-muted sm:text-base">
-                    Cute combinations, hiding in plain sight.
-                  </p>
+              <section className="closet-editorial">
+                <div className="editorial-intro">
+                  <p className="eyebrow">THE PERSONAL WARDROBE EDIT</p>
+                  <h1>Good clothes.<br/><em>Great together.</em></h1>
+                  <p className="editorial-description">A fresh eye on everything you own.<br/>Find your mood. Make a look. Wear it your way.</p>
+                  <div className="editorial-actions">
+                    <Button primary onClick={() => setModal({type:"upload"})}><Plus size={17}/> Add clothing</Button>
+                    <button className="editorial-text-link" onClick={()=>go("vibes")}>Find your aesthetic <span aria-hidden="true">↗︎</span></button>
+                  </div>
+                  <div className="editorial-footnote"><span className="status-dot"/> YOUR CLOSET, YOUR POINT OF VIEW</div>
                 </div>
-                <Button primary onClick={() => setModal({ type: "upload" })}>
-                  <Plus size={18} />
-                  Add clothing
-                </Button>
-              </div>
-              <div className="mb-8 flex flex-wrap items-center gap-4 rounded-xl border border-[#dddddd] bg-[#f5f5f5] p-5">
-                <span className="rounded-full bg-[#f5f5f5] p-3 text-[#555555]">
-                  <CloudSun size={28} />
-                </span>
-                <div className="min-w-[180px] flex-1">
-                  <p className="eyebrow text-[11px]">
-                    {loc.name} · your daily edit
-                  </p>
-                  <h2 className="mt-1.5 text-lg font-medium">{weatherLabel}</h2>
-                  <p className="mt-1 text-sm text-[#555555]">
-                    From Locust Walk to your last plan of the day.
-                  </p>
+                <div className="editorial-composition">
+                  <div className="composition-caption"><span>THE CLOSET STUDY</span><span>01 / EVERYDAY</span></div>
+                  <div className="composition-pieces" aria-label={isDemo ? "Sample wardrobe inspiration" : "From your wardrobe"}>
+                    {[(pieces.find(p=>p.category==="tops") || pieces[0]),(pieces.find(p=>p.category==="bottoms") || pieces[1])].filter(Boolean).map((p,i)=><button key={p.id} className={"composition-piece piece-"+i} onClick={()=>{choose(p.id,true);document.getElementById("wardrobe")?.scrollIntoView({behavior:"smooth",block:"start"});}} aria-label={"Style "+p.name}><Art piece={p}/><span>{p.name} <span aria-hidden="true">↗︎</span></span></button>)}
+                  </div>
+                  <div className="composition-bottom"><span>{isDemo ? "A preview of the possibilities" : "Already yours. Newly inspired."}</span><span>{isDemo ? "SAMPLE EDIT" : "YOUR COLLECTION"}</span></div>
                 </div>
-                <Button
-                  onClick={() => go("today")}
-                  className="border-[#dddddd] bg-transparent"
-                >
-                  Style my day
-                  <Sparkles size={16} />
-                </Button>
-              </div>
+              </section>
+              <button className="daily-dispatch" onClick={()=>go("today")}>
+                <span className="dispatch-label"><CloudSun size={20}/> THE DAILY EDIT</span>
+                <span className="dispatch-weather">{loc.name} <span aria-hidden="true">/</span> {weatherLabel}</span>
+                <span className="dispatch-cta">Style my day <span aria-hidden="true">↗︎</span></span>
+              </button>
               <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
-                <section>
+                <section id="wardrobe" className="wardrobe-section">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <h2 className="section-title">
@@ -881,7 +786,7 @@ export default function ClosetApp() {
                       </button>
                     </div>
                   </div>
-                  <div className="my-5 flex flex-wrap items-center justify-between gap-3">
+                  <div className="wardrobe-toolbar my-5 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex flex-wrap gap-1">
                       {["all", "tops", "bottoms", "layers"].map((f) => (
                         <button
@@ -1243,8 +1148,8 @@ export default function ClosetApp() {
             />
           )}
           <footer className="mt-9 flex flex-wrap justify-between gap-3 border-t border-line pt-5 text-xs text-[#555555]">
-            <span>Less “nothing to wear.” More you.</span>
-            <span>A closet for your everyday ✳</span>
+            <span className="footer-wordmark">outfits.</span>
+            <span>Wear what makes you, you.</span>
           </footer>
         </main>
       </div>
@@ -1547,137 +1452,30 @@ function Vibes({ mood, setMood, settings, saveSettings, notify }) {
       setBusy(false);
     }
   };
-  return (
-    <>
-      <PageHeading
-        eyebrow="A LITTLE MOODBOARD MOMENT"
-        title="What feels like you?"
-        subtitle="Different plans, different energy. Pick up to three vibes for each mood."
-      />
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
-        {MOODS.map((m) => (
-          <button
-            key={m.id}
-            onClick={() => setMood(m.id)}
-            className={cx("chip shrink-0", mood === m.id && "chip-selected")}
-          >
-            {m.label}
-          </button>
-        ))}
-      </div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted">
-          For{" "}
-          <strong className="font-medium text-ink">
-            {MOODS.find((m) => m.id === mood)?.label.toLowerCase()}
-          </strong>
-          , your vibe is{" "}
-          {selected
-            .map((id) =>
-              AESTHETICS.find((a) => a.id === id)?.name.toLowerCase(),
-            )
-            .join(" + ") || "open to anything"}
-          .
-        </p>
-        <span className="text-xs text-muted">
-          {selected.length} / 3 selected
-        </span>
-      </div>
-      <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
-        {AESTHETICS.map((a) => (
-          <article
-            key={a.id}
-            className={cx(
-              "overflow-hidden rounded-xl border-2 bg-white transition",
-              selected.includes(a.id)
-                ? "border-[#dddddd]"
-                : "border-transparent shadow-sm",
-            )}
-          >
-            <button
-              className="relative block w-full text-left"
-              aria-pressed={selected.includes(a.id)}
-              disabled={busy}
-              onClick={() => toggle(a.id)}
-            >
-              <VibeArt index={a.image} />
-              <span
-                className={cx(
-                  "absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full border shadow-sm",
-                  selected.includes(a.id)
-                    ? "border-ink bg-ink text-white"
-                    : "border-white bg-white/90",
-                )}
-              >
-                {selected.includes(a.id) ? (
-                  <Check size={15} />
-                ) : (
-                  <Plus size={15} />
-                )}
-              </span>
-              <div className="p-4 sm:p-5">
-                <h2 className="text-base font-semibold sm:text-lg">{a.name}</h2>
-                <p className="mt-1.5 text-xs leading-relaxed text-muted sm:text-sm">
-                  {a.sub}
-                </p>
-                <div className="mt-3 flex gap-1.5">
-                  {a.colors.map((c) => (
-                    <span
-                      key={c}
-                      className="h-4 w-4 rounded-full border border-black/10"
-                      style={{ background: COLORS[c] }}
-                      title={c}
-                    />
-                  ))}
-                </div>
-              </div>
-            </button>
-            <div className="flex items-center justify-between border-t border-line px-4 py-3 sm:px-5">
-              <a
-                href={a.pinterest}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1.5 text-xs font-medium text-[#555555]"
-              >
-                Explore on Pinterest
-                <ExternalLink size={12} />
-              </a>
-              <span className="hidden text-[11px] text-muted sm:block">
-                Outfit inspiration
-              </span>
-            </div>
-          </article>
-        ))}
-      </div>
-      <div className="card mt-6 flex items-center justify-between gap-5 p-5">
-        <div>
-          <h3 className="text-base font-medium">A little print mixing?</h3>
-          <p className="subtle mt-1">
-            Favor shared-color prints over the quieter one-print-and-solid
-            approach.
-          </p>
+  const [tab,setTab] = useState("discover");
+  const [search,setSearch] = useState("");
+  const boards = AESTHETICS.filter(a => (tab !== "saved" || selected.includes(a.id)) && (a.name+" "+a.sub).toLowerCase().includes(search.toLowerCase()));
+  return <section className="vibes-page">
+    <div className="board-heading"><div><p className="eyebrow">COLLECT WHAT FEELS LIKE YOU</p><h1>Your kind of <em>inspiration.</em></h1><p>Save the aesthetics you love. We’ll bring them into your outfits.</p></div><span className="board-count"><Bookmark size={16}/>{selected.length} / 3 saved for this mood</span></div>
+    <div className="board-toolbar"><div className="board-tabs" aria-label="Inspiration views"><button onClick={()=>setTab("discover")} aria-pressed={tab==="discover"} className={cx(tab==="discover"&&"active")}>Discover</button><button onClick={()=>setTab("saved")} aria-pressed={tab==="saved"} className={cx(tab==="saved"&&"active")}>Saved for this mood <span>{selected.length}</span></button></div><label className="board-search"><Search size={17}/><input placeholder="Find your aesthetic" aria-label="Search aesthetics" value={search} onChange={e=>setSearch(e.target.value)}/>{search&&<button onClick={()=>setSearch("")} aria-label="Clear search"><X size={15}/></button>}</label></div>
+    <div className="mood-board-selector"><span className="eyebrow">DRESSING FOR</span><div>{MOODS.map(m=><button key={m.id} aria-pressed={mood===m.id} onClick={()=>setMood(m.id)} className={cx("chip",mood===m.id&&"chip-selected")}>{m.label}</button>)}</div></div>
+    <p className="board-context">For <strong>{MOODS.find(m=>m.id===mood)?.label.toLowerCase()}</strong>, your vibe is {selected.map(id=>AESTHETICS.find(a=>a.id===id)?.name.toLowerCase()).join(" + ") || "open to anything"}.</p>
+    <div className="pin-grid" key={tab+search}>
+      {boards.map(a=><article key={a.id} className={cx("inspiration-pin",selected.includes(a.id)&&"pin-saved")}>
+        <div className={cx("pin-image", "pin-height-"+(a.image%3))}>
+          <svg className="vibe-photo" role="img" aria-label={a.name+" outfit inspiration"} viewBox={`${(a.image%3)*512+2} ${a.image<3?2:494} 508 ${a.image<3?486:526}`} preserveAspectRatio="xMidYMid slice"><image href="/inspiration.png" width="1536" height="1024"/></svg>
+          <div className="pin-shade"/>
+          <button className="pin-save" disabled={busy} aria-label={(selected.includes(a.id)?"Unsave ":"Save ")+a.name} aria-pressed={selected.includes(a.id)} onClick={()=>toggle(a.id)}>{selected.includes(a.id)?<><Check size={14}/>Saved</>:<>Save <Plus size={14}/></>}</button>
+          <a className="pin-explore" href={a.pinterest} target="_blank" rel="noreferrer" aria-label={"Explore "+a.name+" on Pinterest"}>Pinterest <ExternalLink size={13}/></a>
+          <span className="pin-number">0{a.image+1}</span>
         </div>
-        <input
-          aria-label="Allow bolder print mixing"
-          type="checkbox"
-          className="h-5 w-5 shrink-0 accent-[#314b38]"
-          checked={!!settings.boldPatterns}
-          onChange={async (e) => {
-            try {
-              await saveSettings({ boldPatterns: e.target.checked });
-            } catch (err) {
-              notify(err.message);
-            }
-          }}
-        />
-      </div>
-      <p className="mt-4 text-xs leading-relaxed text-muted">
-        Original illustrative moodboards, with links to explore each aesthetic
-        on Pinterest. Selected vibes guide your pairings; Pinterest activity is
-        not synced.
-      </p>
-    </>
-  );
+        <div className="pin-caption"><div><h2>{a.name}</h2><p>{a.sub}</p></div><div className="pin-palette" aria-label="Palette">{a.colors.slice(0,3).map(c=><span key={c} title={c} style={{background:COLORS[c]}}/>)}</div></div>
+      </article>)}
+    </div>
+    {!boards.length&&<Empty icon={Bookmark} title={search?"No matching aesthetics.":"Make this board yours."}>{search?"Try a different search.":"Explore Discover and save up to three aesthetics for this mood."}</Empty>}
+    <div className="board-preferences"><div><h3>Room for a little pattern play?</h3><p>Let your stylist mix prints with a shared color palette.</p></div><label className="switch-control"><input aria-label="Allow bolder print mixing" type="checkbox" checked={!!settings.boldPatterns} onChange={async e=>{try{await saveSettings({boldPatterns:e.target.checked});}catch(err){notify(err.message);}}}/><span/></label></div>
+    <p className="board-disclosure">Original AI-created inspiration. Pinterest links open more ideas; saving here shapes your Outfits recommendations.</p>
+  </section>;
 }
 
 function Weather({ weather, error, location, date, refresh }) {

@@ -113,7 +113,7 @@ test("React closet supports styling, saved outfits, per-mood vibes, and photo-fi
   assert.match(w.document.body.textContent, /Soft campus look/);
   btn("My vibes").click();
   await wait();
-  assert.equal(w.document.querySelectorAll(".vibe-art").length, 6);
+  assert.equal(w.document.querySelectorAll(".vibe-photo").length, 6);
   assert.equal(
     w.document.querySelectorAll('a[href*="pinterest.com"]').length,
     6,
