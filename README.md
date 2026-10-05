@@ -59,3 +59,8 @@ The matching logic uses adaptable styling heuristics, not universal rules:
 - [Who What Wear: outfit proportions](https://www.whowhatwear.com/uk/how-to-put-together-an-outfit)
 
 Moodboards and sample clothing images are original generated illustrations, not imported Pinterest images. Pinterest links open inspiration searches; they do not sync activity or boards.
+
+## Outfit diary and photo previews
+Log actual wear dates with Wore this. Calendar thumbnails show wear history; recommendations penalize repeats within 14 days and consider all daily occasion moods alongside the forecast. Saved looks are not automatically logged.
+
+Photo previews send the reference and owned clothing photos to OpenAI images/edits (gpt-image-1) using the connected API key. Image model access and billing are required. Reference photos and results are not saved by Outfits. Previews are approximate 2D images, not sizing predictions or 3D replicas.

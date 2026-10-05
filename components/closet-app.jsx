@@ -144,8 +144,8 @@ function Busy({ label = "One moment…" }) {
 }
 function Empty({ icon: Icon = Hanger, title: heading, children }) {
   return (
-    <div className="rounded-xl border border-dashed border-[#cbd5bd] bg-leaf/40 px-6 py-14 text-center">
-      <Icon size={38} className="mx-auto mb-4 text-[#94a47e]" />
+    <div className="rounded-xl border border-dashed border-[#dddddd] bg-leaf/40 px-6 py-14 text-center">
+      <Icon size={38} className="mx-auto mb-4 text-[#555555]" />
       <h2 className="text-2xl font-medium">{heading}</h2>
       <div className="mt-3 text-sm leading-relaxed text-muted">{children}</div>
     </div>
@@ -271,7 +271,7 @@ function GarmentTile({ piece, selected, onSelect, onDetails, stageRef, grid }) {
       <div
         className={cx(
           "relative rounded-lg border bg-white/85 p-2.5",
-          selected ? "border-[#819665]" : "border-line",
+          selected ? "border-[#dddddd]" : "border-line",
         )}
       >
         <button
@@ -299,7 +299,7 @@ function GarmentTile({ piece, selected, onSelect, onDetails, stageRef, grid }) {
         {selected && (
           <Check
             size={13}
-            className="absolute bottom-2.5 right-2 text-[#658047]"
+            className="absolute bottom-2.5 right-2 text-[#555555]"
           />
         )}
       </div>
@@ -430,15 +430,18 @@ export default function ClosetApp() {
     const request = ++requestVersion.current;
     setPairing(true);
     try {
+      const dayEvents = data.events.filter((e) => dayKey(new Date(e.start)) === date);
       const eventMood = daily
         ? data.events
             .filter((e) => dayKey(new Date(e.start)) === date)
-            .sort((a, b) => Date.parse(a.start) - Date.parse(b.start))[0]?.mood
+            .sort((a, b) => (["formal", "professional", "athletic", "going-out", "study"].indexOf(a.mood) < 0 ? 9 : ["formal", "professional", "athletic", "going-out", "study"].indexOf(a.mood)) - (["formal", "professional", "athletic", "going-out", "study"].indexOf(b.mood) < 0 ? 9 : ["formal", "professional", "athletic", "going-out", "study"].indexOf(b.mood)))[0]?.mood
         : null;
       const activeMood = eventMood || mood;
       const forecast = weather?.days?.find((d) => d.date === date);
       const r = await post("recommend", {
         sample: isDemo,
+        eventMoods: daily ? dayEvents.map(e => e.mood) : [],
+        note: daily ? "Plans: " + dayEvents.map(e => e.title + " (" + e.mood + ")").join(", ") : "",
         mood: activeMood,
         weather: weather
           ? {
@@ -460,6 +463,7 @@ export default function ClosetApp() {
       if (request === requestVersion.current) setPairing(false);
     }
   };
+  const logWear = (ids, name, date = dayKey()) => setModal({type: "wear", pieces: ids, name, date});
   const saveSettings = async (patch) => {
     const settings = await post("settings", patch, "PUT");
     setData((d) => ({ ...d, settings }));
@@ -468,7 +472,7 @@ export default function ClosetApp() {
   useEffect(() => {
     if (!loading && view === "today")
       recommend({ daily: true, date: selectedDate });
-  }, [view, selectedDate, loading, weather]);
+  }, [view, selectedDate, loading, weather, data.events, data.settings.wearHistory]);
   useEffect(() => {
     if (!document.modelContext?.registerTool) return;
     const control = new AbortController();
@@ -535,7 +539,7 @@ export default function ClosetApp() {
   const stage = (
     <aside className="card p-5 xl:p-6 lg:sticky lg:top-6">
       <div className="flex items-start gap-3">
-        <span className="rounded-xl bg-leaf p-2.5 text-[#738956]">
+        <span className="rounded-xl bg-leaf p-2.5 text-[#555555]">
           <Sparkles size={22} />
         </span>
         <div>
@@ -566,7 +570,7 @@ export default function ClosetApp() {
         {activeVibes.map((v) => (
           <span
             key={v}
-            className="rounded-full bg-rose px-2.5 py-1 text-xs text-[#936b79]"
+            className="rounded-full bg-rose px-2.5 py-1 text-xs text-[#555555]"
           >
             {AESTHETICS.find((a) => a.id === v)?.name}
           </span>
@@ -577,7 +581,7 @@ export default function ClosetApp() {
       </div>
       <div
         ref={stageRef}
-        className="fit-stage relative min-h-[260px] rounded-xl border border-dashed border-[#cbd5bd] p-4"
+        className="fit-stage relative min-h-[260px] rounded-xl border border-dashed border-[#dddddd] p-4"
       >
         <p className="eyebrow text-[11px]">The fit check</p>
         {selection.length ? (
@@ -607,7 +611,7 @@ export default function ClosetApp() {
           </div>
         ) : (
           <div className="py-10 text-center">
-            <Hanger size={46} className="mx-auto text-[#bdc9ad]" />
+            <Hanger size={46} className="mx-auto text-[#555555]" />
             <h3 className="mt-5 text-base font-medium">
               Good things go together.
             </h3>
@@ -618,7 +622,7 @@ export default function ClosetApp() {
             </p>
           </div>
         )}
-        <p className="mt-4 flex items-center justify-center gap-1 text-xs text-[#94a084]">
+        <p className="mt-4 flex items-center justify-center gap-1 text-xs text-[#555555]">
           <Plus size={12} />
           Drop a piece here
         </p>
@@ -697,6 +701,7 @@ export default function ClosetApp() {
           Save outfit
         </button>
       </div>
+      <Button className="mt-4 w-full" disabled={selection.length < 2} onClick={() => setModal({type: "tryon"})}><Camera size={16}/> Preview on me</Button>
     </aside>
   );
   return (
@@ -707,9 +712,9 @@ export default function ClosetApp() {
           className="flex items-center gap-2.5 px-2 text-[34px] font-semibold tracking-[-2px]"
         >
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink pb-1 pr-1 font-serif text-[36px] font-normal italic text-white">
-            f.
+            <Hanger size={25} />
           </span>
-          form<span className="self-start pt-1 text-xs tracking-normal">®</span>
+          Outfits
         </a>
         <p className="eyebrow mt-6 px-2 text-[10px] tracking-[.1em]">
           YOUR EVERYDAY, STYLED
@@ -724,7 +729,7 @@ export default function ClosetApp() {
               <Icon size={20} />
               {label}
               {v === "closet" && (
-                <span className="ml-auto rounded bg-[#dfe8d1] px-1.5 py-.5 text-xs">
+                <span className="ml-auto rounded bg-[#f5f5f5] px-1.5 py-.5 text-xs">
                   {pieces.length}
                 </span>
               )}
@@ -733,8 +738,8 @@ export default function ClosetApp() {
         </nav>
         <div className="mt-auto">
           <div className="mx-3 my-7">
-            <Sparkles size={21} className="text-[#9eaf86]" />
-            <p className="mt-3 text-sm leading-relaxed text-[#99a28e]">
+            <Sparkles size={21} className="text-[#555555]" />
+            <p className="mt-3 text-sm leading-relaxed text-[#555555]">
               A little less deciding.
               <br />A little more you.
             </p>
@@ -753,7 +758,7 @@ export default function ClosetApp() {
             className="mt-5 flex w-full items-center gap-3 border-t border-line pt-5 text-left"
             onClick={() => setModal({ type: "account" })}
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose text-sm text-[#a16b7c]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose text-sm text-[#555555]">
               {(data.user?.name || data.user?.email || "F")
                 .slice(0, 1)
                 .toUpperCase()}
@@ -772,7 +777,7 @@ export default function ClosetApp() {
       <div className="lg:ml-[215px]">
         <header className="flex h-[74px] items-center justify-between border-b border-line bg-white/70 px-5 text-sm md:px-9">
           <p className="text-muted">
-            Your wardrobe <span className="mx-2 text-[#c3cbb8]">/</span>
+            Your wardrobe <span className="mx-2 text-[#555555]">/</span>
             <span className="text-ink">
               {nav.find((n) => n[0] === view)?.[1] || "Connections"}
             </span>
@@ -820,8 +825,8 @@ export default function ClosetApp() {
                   Add clothing
                 </Button>
               </div>
-              <div className="mb-8 flex flex-wrap items-center gap-4 rounded-xl border border-[#e1e6d6] bg-[#edf2e4] p-5">
-                <span className="rounded-full bg-[#e2ebd3] p-3 text-[#7b905d]">
+              <div className="mb-8 flex flex-wrap items-center gap-4 rounded-xl border border-[#dddddd] bg-[#f5f5f5] p-5">
+                <span className="rounded-full bg-[#f5f5f5] p-3 text-[#555555]">
                   <CloudSun size={28} />
                 </span>
                 <div className="min-w-[180px] flex-1">
@@ -829,13 +834,13 @@ export default function ClosetApp() {
                     {loc.name} · your daily edit
                   </p>
                   <h2 className="mt-1.5 text-lg font-medium">{weatherLabel}</h2>
-                  <p className="mt-1 text-sm text-[#899777]">
+                  <p className="mt-1 text-sm text-[#555555]">
                     From Locust Walk to your last plan of the day.
                   </p>
                 </div>
                 <Button
                   onClick={() => go("today")}
-                  className="border-[#bdcba8] bg-transparent"
+                  className="border-[#dddddd] bg-transparent"
                 >
                   Style my day
                   <Sparkles size={16} />
@@ -988,7 +993,7 @@ export default function ClosetApp() {
                 <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                   {data.outfits.map((o) => (
                     <article key={o.id} className="card overflow-hidden">
-                      <div className="outfit-art bg-[#eef2e7] p-6">
+                      <div className="outfit-art bg-[#f5f5f5] p-6">
                         {o.pieces.map((id) => (
                           <Art key={id} piece={find(id)} />
                         ))}
@@ -1001,6 +1006,8 @@ export default function ClosetApp() {
                             ? " · Sample pieces"
                             : ""}
                         </p>
+                        <p className="mt-3 text-xs text-muted">{(() => {const entries = (data.settings.wearHistory || []).filter(w => w.pieces.slice().sort().join() === o.pieces.slice().sort().join()); return entries.length ? `Worn ${entries.length} times · last ${entries.map(w=>w.date).sort().at(-1)}` : "Not logged as worn yet";})()}</p>
+                        <Button className="mt-3" onClick={() => logWear(o.pieces, o.name)}>Wore this</Button>
                         <div className="mt-5 flex justify-between">
                           <Button
                             onClick={() => {
@@ -1095,7 +1102,7 @@ export default function ClosetApp() {
                       <button
                         className="icon-btn"
                         aria-label="Refresh pairing"
-                        onClick={() => recommend()}
+                        onClick={() => recommend({daily: true})}
                         disabled={pairing}
                       >
                         <RefreshCw
@@ -1120,7 +1127,7 @@ export default function ClosetApp() {
                     {result && (
                       <>
                         <p className="subtle">{result.reason}</p>
-                        <p className="mt-3 text-sm text-[#6f815d]">
+                        <p className="mt-3 text-sm text-[#555555]">
                           {result.tips}
                         </p>
                         <div className="mt-5 flex flex-wrap gap-2">
@@ -1137,6 +1144,8 @@ export default function ClosetApp() {
                     )}
                     <div className="mt-6 flex flex-wrap gap-3">
                       <Button onClick={() => go("closet")}>Make it mine</Button>
+                      <Button disabled={selection.length < 2} onClick={() => logWear(selection, result?.title || "My outfit", selectedDate)}>Wore this</Button>
+                      <Button disabled={selection.length < 2} onClick={() => setModal({type: "tryon"})}>Preview on me</Button>
                       <Button
                         primary
                         disabled={selection.length < 2}
@@ -1189,7 +1198,8 @@ export default function ClosetApp() {
               </div>
             </>
           )}
-          {view === "calendar" && (
+          {view === "calendar" && (<>
+            <WearCalendar history={data.settings.wearHistory || []} find={find} remove={async id => {try {await api("wear/"+id, {method:"DELETE"}); await refreshData();} catch(e){notify(e.message);}}}/>
             <CalendarView
               events={data.events}
               google={connections.google}
@@ -1209,7 +1219,7 @@ export default function ClosetApp() {
                 }
               }}
               remove={(event) => setModal({ type: "deleteEvent", event })}
-            />
+            /></>
           )}
           {view === "settings" && (
             <SettingsView
@@ -1232,7 +1242,7 @@ export default function ClosetApp() {
               }}
             />
           )}
-          <footer className="mt-9 flex flex-wrap justify-between gap-3 border-t border-line pt-5 text-xs text-[#9ca690]">
+          <footer className="mt-9 flex flex-wrap justify-between gap-3 border-t border-line pt-5 text-xs text-[#555555]">
             <span>Less “nothing to wear.” More you.</span>
             <span>A closet for your everyday ✳</span>
           </footer>
@@ -1268,6 +1278,8 @@ export default function ClosetApp() {
         <Dialog
           heading={
             {
+              tryon: "Your look, on you.",
+              wear: "Log an outfit.",
               upload: "One photo. We’ll take it from here.",
               save: "Keep this combination.",
               details: modal.piece?.name,
@@ -1283,9 +1295,11 @@ export default function ClosetApp() {
               deletePiece: "Remove this piece?",
             }[modal.type]
           }
-          kicker={modal.type === "upload" ? "PHOTO → CLOSET" : "YOUR FORM"}
+          kicker={modal.type === "upload" ? "PHOTO → CLOSET" : "YOUR OUTFITS"}
           onClose={close}
         >
+          {modal.type === "wear" && <WearForm initial={modal} onSaved={async () => {await refreshData();close();notify("Added to your outfit calendar.");}}/>}
+          {modal.type === "tryon" && <TryOn pieces={selection} demo={selection.some(id=>/^(demo|sample)-/.test(id))} ai={connections.ai} connect={() => setModal({type:"ai"})}/>}
           {modal.type === "upload" && (
             <UploadForm
               ai={connections.ai}
@@ -1345,7 +1359,7 @@ export default function ClosetApp() {
               <div className="mt-6 flex items-center justify-between gap-3">
                 {modal.piece.atlas === undefined ? (
                   <button
-                    className="text-sm text-[#a16565]"
+                    className="text-sm text-[#555555]"
                     onClick={() =>
                       setModal({ type: "deletePiece", piece: modal.piece })
                     }
@@ -1576,7 +1590,7 @@ function Vibes({ mood, setMood, settings, saveSettings, notify }) {
             className={cx(
               "overflow-hidden rounded-xl border-2 bg-white transition",
               selected.includes(a.id)
-                ? "border-[#7e9369]"
+                ? "border-[#dddddd]"
                 : "border-transparent shadow-sm",
             )}
           >
@@ -1623,7 +1637,7 @@ function Vibes({ mood, setMood, settings, saveSettings, notify }) {
                 href={a.pinterest}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-1.5 text-xs font-medium text-[#9c5968]"
+                className="flex items-center gap-1.5 text-xs font-medium text-[#555555]"
               >
                 Explore on Pinterest
                 <ExternalLink size={12} />
@@ -1672,7 +1686,7 @@ function Weather({ weather, error, location, date, refresh }) {
     rain = d?.rain ?? weather?.rain;
   const Icon = rain > 30 ? CloudRain : Sun;
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-[#dee7d1] bg-[#edf2e3] p-6">
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-[#dddddd] bg-[#f5f5f5] p-6">
       <div>
         <p className="eyebrow">{location.name} · forecast</p>
         {weather ? (
@@ -1680,15 +1694,15 @@ function Weather({ weather, error, location, date, refresh }) {
             <h2 className="mt-2 text-4xl font-medium">
               {Math.round((temp * 9) / 5 + 32)}°F
               {d && (
-                <span className="ml-2 text-lg text-[#8d9c7a]">
+                <span className="ml-2 text-lg text-[#555555]">
                   / {Math.round((d.low * 9) / 5 + 32)}°
                 </span>
               )}
             </h2>
-            <p className="mt-2 text-sm text-[#7f8f6b]">
+            <p className="mt-2 text-sm text-[#555555]">
               {d?.description || weather.description} · {Math.round(rain)}% rain
             </p>
-            <p className="mt-2 text-xs text-[#899777]">
+            <p className="mt-2 text-xs text-[#555555]">
               Live forecast · Open-Meteo
             </p>
           </>
@@ -1703,7 +1717,7 @@ function Weather({ weather, error, location, date, refresh }) {
           </>
         )}
       </div>
-      <Icon size={55} strokeWidth={1} className="shrink-0 text-[#93a772]" />
+      <Icon size={55} strokeWidth={1} className="shrink-0 text-[#555555]" />
     </div>
   );
 }
@@ -1716,7 +1730,7 @@ function Agenda({ events }) {
           .map((e) => (
             <div
               key={e.id}
-              className="my-5 border-l-2 border-[#b7c99d] py-1 pl-4"
+              className="my-5 border-l-2 border-[#dddddd] py-1 pl-4"
             >
               <h3 className="text-sm font-medium tracking-normal">{e.title}</h3>
               <p className="mt-2 text-xs text-muted">
@@ -1903,7 +1917,7 @@ function SettingsView({
             icon: CalendarDays,
             connected: connections.google.connected,
             description: connections.google.connected
-              ? "Your private feed refreshes when you open Form."
+              ? "Your private feed refreshes when you open Outfits."
               : "Connect a private, read-only feed to style around your plans.",
             action: connections.google.connected
               ? "Reconnect calendar"
@@ -1924,7 +1938,7 @@ function SettingsView({
           },
         ].map((c) => (
           <section className="card flex flex-col p-6" key={c.title}>
-            <c.icon size={28} className="mb-5 text-[#8a9d70]" />
+            <c.icon size={28} className="mb-5 text-[#555555]" />
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-xl font-semibold">{c.title}</h2>
               <span
@@ -1955,7 +1969,7 @@ function SettingsView({
           Thoughtful styling, with room to play.
         </h2>
         <p className="subtle mt-3">
-          Form considers color harmony, pattern balance, garment proportions,
+          Outfits considers color harmony, pattern balance, garment proportions,
           and your saved vibes. AI suggestions can be edited, and warmth is
           always an estimate. No rules about your body—just more ways to enjoy
           your clothes.
@@ -2059,7 +2073,7 @@ function UploadForm({ ai, onAIConnected, onSaved }) {
   };
   return (
     <div>
-      <div className="rounded-xl border border-dashed border-[#bdcbaa] bg-paper p-6 text-center">
+      <div className="rounded-xl border border-dashed border-[#dddddd] bg-paper p-6 text-center">
         {photo ? (
           <img
             src={photo.image}
@@ -2067,7 +2081,7 @@ function UploadForm({ ai, onAIConnected, onSaved }) {
             alt="Your clothing photo"
           />
         ) : (
-          <ImagePlus size={40} className="mx-auto mb-4 text-[#95a47f]" />
+          <ImagePlus size={40} className="mx-auto mb-4 text-[#555555]" />
         )}
         <h3 className="text-lg font-medium">
           {scan
@@ -2414,7 +2428,7 @@ function GoogleConnect({ onConnected }) {
       }}
     >
       <p className="subtle">
-        Connect your Google Calendar’s private iCal feed. Form reads your plans
+        Connect your Google Calendar’s private iCal feed. Outfits reads your plans
         and refreshes them when you open the app; it never edits your calendar.
       </p>
       <ol className="list-decimal space-y-2 pl-5 text-sm leading-relaxed text-muted">
@@ -2597,7 +2611,7 @@ function LocationForm({ current, onSelect }) {
         </p>
       )}
       <p className="subtle">
-        Philadelphia is the default. Forecasts refresh automatically while Form
+        Philadelphia is the default. Forecasts refresh automatically while Outfits
         is open.
       </p>
     </form>
@@ -2767,4 +2781,19 @@ function ConfirmDelete({ type, onConfirm, onCancel }) {
       </div>
     </div>
   );
+}
+
+function WearForm({initial,onSaved}) {
+  const [date,setDate]=useState(initial.date), [busy,setBusy]=useState(false), [error,setError]=useState("");
+  return <form onSubmit={async e=>{e.preventDefault();setBusy(true);try{await post("wear",{date,pieces:initial.pieces,name:initial.name});await onSaved();}catch(e){setError(e.message);}finally{setBusy(false);}}} className="space-y-5"><p className="subtle">Log what you actually wore. Your stylist will favor fresh combinations over repeats from the last two weeks.</p><label className="field">Date worn<input required className="input" type="date" max={dayKey()} value={date} onChange={e=>setDate(e.target.value)}/></label>{error && <p role="alert">{error}</p>}<Button primary disabled={busy} type="submit">{busy?"Saving…":"Add to outfit calendar"}</Button></form>;
+}
+function WearCalendar({history,find,remove}) {
+  const [month,setMonth]=useState(()=>dayKey().slice(0,7));
+  const first=new Date(month+"-01T12:00:00"), days=new Date(first.getFullYear(),first.getMonth()+1,0).getDate();
+  const shift=n=>{const d=new Date(first);d.setMonth(d.getMonth()+n);setMonth(dayKey(d).slice(0,7));};
+  return <section className="mb-10"><div className="mb-5 flex flex-wrap items-center justify-between gap-4"><div><p className="eyebrow">YOUR OUTFIT DIARY</p><h1 className="mt-2 text-3xl font-semibold">What you wore.</h1><p className="subtle mt-2">A little outfit memory. A lot more variety.</p></div><div className="flex items-center gap-3"><Button aria-label="Previous month" onClick={()=>shift(-1)}>←</Button><span>{first.toLocaleDateString(undefined,{month:"long",year:"numeric"})}</span><Button aria-label="Next month" onClick={()=>shift(1)}>→</Button></div></div><div className="card overflow-x-auto"><div className="grid min-w-[560px] grid-cols-7">{["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d=><div key={d} className="border-b border-line p-3 text-xs text-muted">{d}</div>)}{Array.from({length:first.getDay()},(_,i)=><div key={'blank'+i} className="border-b border-r border-line bg-paper"/>)}{Array.from({length:days},(_,i)=>{const date=month+'-'+String(i+1).padStart(2,'0');return <div key={date} className={cx("min-h-[120px] border-b border-r border-line p-2",date===dayKey()&&"bg-paper")}><span className={cx("inline-flex h-6 w-6 items-center justify-center text-xs rounded-full",date===dayKey()&&"bg-ink text-white")}>{i+1}</span>{history.filter(w=>w.date===date).map(w=><div key={w.id} className="mt-2"><div className="flex h-16">{w.pieces.map(id=><Art key={id} piece={find(id)}/>)}</div><p className="mt-1 text-[10px] leading-tight">{w.name}</p><button className="mt-1 text-[10px] text-muted underline" onClick={()=>remove(w.id)} aria-label={'Remove wear log '+w.name+' '+date}>Undo log</button></div>)}</div>;})}</div></div>{!history.length && <p className="subtle mt-3">Tap “Wore this” on a saved outfit or daily recommendation to start your diary.</p>}</section>;
+}
+function TryOn({pieces,demo,ai,connect}) {
+  const [photo,setPhoto]=useState(null),[result,setResult]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState("");
+  return <div className="space-y-5"><p className="subtle">See an AI styling preview with your own photo and clothing. Your photo is sent to OpenAI to generate this preview; Outfits does not save it. AI may change details. This does not predict size or fit.</p>{!ai ? <Button primary onClick={connect}>Connect AI to preview</Button> : demo ? <p className="rounded-xl bg-paper p-5">Upload your own clothing and select a top and bottom first. Previews use their actual photos.</p> : <><label className="field">Your fully clothed photo<input type="file" accept="image/jpeg,image/png,image/webp" className="input" disabled={busy} onChange={e=>{const f=e.target.files?.[0];setError("");setResult(null);if(!f)return;if(f.size>2900000 || !['image/jpeg','image/png','image/webp'].includes(f.type)){setError("Choose a JPEG, PNG or WebP under 3 MB.");setPhoto(null);return;}const r=new FileReader();r.onload=()=>setPhoto(r.result);r.readAsDataURL(f);}}/></label>{photo && <img src={photo} alt="Your reference photo" className="max-h-64 w-full rounded-xl object-contain bg-paper"/>}<p className="text-xs text-muted">Use a clear full-length photo of yourself. Height and weight aren’t needed for a visual preview. Each generation is billed to your connected OpenAI account.</p><Button primary disabled={!photo||busy} onClick={async()=>{setBusy(true);setError("");try{const r=await post("tryon",{image:photo,pieces});setResult(r.image);}catch(e){setError(e.message);}finally{setBusy(false);}}}>{busy?"Creating your preview… this can take a few minutes":"Generate my preview"}</Button></>}{error&&<p role="alert">{error}</p>}{result&&<div><p className="eyebrow mb-3">AI STYLING PREVIEW</p><img src={result} alt="AI-generated outfit preview" className="w-full rounded-xl"/><a className="btn mt-4" href={result} download="outfits-preview.png">Download preview</a></div>}</div>;
 }

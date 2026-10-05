@@ -362,3 +362,29 @@ test("AI recognition requires an account connection and validates structured sug
   assert.equal(bad.status, 400);
   assert.equal(called, 1);
 });
+
+test("wear logs persist privately, deduplicate, and can be undone", async () => {
+ const env=environment(); const data={date:"2026-10-01",name:"Campus look",pieces:[samplePieces[0].id,samplePieces[8].id]};
+ for(let i=0;i<2;i++) assert.equal((await worker.fetch(req("wear","alice","POST",data),env)).status,200);
+ const alice=await (await worker.fetch(req("closet"),env)).json();
+ assert.equal(alice.settings.wearHistory.length,1);
+ const bob=await (await worker.fetch(req("closet","bob"),env)).json();assert.equal(bob.settings.wearHistory,undefined);
+ const id=alice.settings.wearHistory[0].id;
+ await worker.fetch(req("wear/"+id,"bob","DELETE"),env);
+ assert.equal((await (await worker.fetch(req("closet"),env)).json()).settings.wearHistory.length,1);
+ await worker.fetch(req("wear/"+id,"alice","DELETE"),env);
+ assert.equal((await (await worker.fetch(req("closet"),env)).json()).settings.wearHistory.length,0);
+ assert.equal((await worker.fetch(req("wear","alice","POST",{...data,pieces:["foreign","piece"]}),env)).status,400);
+});
+test("recently worn exact pairings lose priority", async () => {
+ const {rankedPairings}=await import("../styling.js");
+ const before=rankedPairings(samplePieces,"casual",null,{});
+ const after=rankedPairings(samplePieces,"casual",null,{targetDate:"2026-10-05",wearHistory:[{date:"2026-10-04",pieces:before[0].pieces}]});
+ assert.notDeepEqual(after[0].pieces,before[0].pieces);
+});
+test("try-on requires AI connection and rejects unowned clothing before sending photos", async () => {
+ const env=environment();
+ assert.equal((await worker.fetch(req("tryon","alice","POST",{}),env)).status,409);
+ env.OPENAI_API_KEY="test-key";
+ assert.equal((await worker.fetch(req("tryon","alice","POST",{image:"data:image/png;base64,aGVsbG8=",pieces:["foreign","other"]}),env)).status,400);
+});

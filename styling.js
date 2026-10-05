@@ -182,6 +182,16 @@ export function rankedPairings(garments, mood, weather, preferences = {}) {
           : " Add a warm outer layer for the cool forecast.";
       if ((weather?.rain ?? 0) > 30)
         reason += " Bring an umbrella and shoes that handle rain.";
+      const recent = (preferences.wearHistory || []).filter(w => {
+        const days = (Date.parse(preferences.targetDate) - Date.parse(w.date)) / 86400000;
+        return days >= 0 && days < 14;
+      });
+      const exact = recent.filter(w => [t.id,b.id].every(id => w.pieces.includes(id)));
+      score -= exact.length * 28;
+      score -= recent.reduce((n,w) => n + [t.id,b.id].filter(id=>w.pieces.includes(id)).length * 3,0);
+      for (const occasion of new Set(preferences.eventMoods || [])) score += [t,b].filter(g => g.moods.includes(occasion)).length * 7;
+      if (recent.length) details.push({label: exact.length ? "Recent repeat" : "Fresh rotation", why: exact.length ? "You wore this combination in the last two weeks. It is still an option when it suits the day best." : "This combination has not been logged in the last two weeks."});
+      if ((preferences.eventMoods || []).includes("athletic") && mood !== "athletic") reason += " Pack a separate workout outfit for your athletic plans.";
       results.push({
         pieces,
         title,

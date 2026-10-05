@@ -1,11 +1,11 @@
 @import "tailwindcss";
 @theme {
-  --color-ink: #25372e;
-  --color-muted: #778173;
-  --color-paper: #f8f9f5;
-  --color-line: #e2e7db;
-  --color-leaf: #eaf0df;
-  --color-rose: #f6e9ed;
+  --color-ink: #111111;
+  --color-muted: #737373;
+  --color-paper: #ffffff;
+  --color-line: #e8e8e8;
+  --color-leaf: #f2f2f2;
+  --color-rose: #f5f5f5;
   --font-sans: Arial, Helvetica, sans-serif;
 }
 :root {
@@ -13,8 +13,8 @@
 }
 body {
   margin: 0;
-  background: #f8f9f5;
-  color: #25372e;
+  background: #ffffff;
+  color: #111111;
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -40,17 +40,17 @@ textarea {
 }
 button:focus-visible,
 a:focus-visible {
-  outline: 2px solid #8c9e6a;
+  outline: 2px solid #888888;
   outline-offset: 4px;
 }
 input:focus,
 select:focus,
 textarea:focus {
-  outline: 2px solid #a8b795;
+  outline: 2px solid #888888;
   outline-offset: 1px;
 }
 ::selection {
-  background: #e1eacb;
+  background: #888888;
 }
 h1,
 h2,
@@ -67,7 +67,7 @@ dialog {
   border: none;
   padding: 0;
   background: white;
-  color: #25372e;
+  color: #111111;
   max-height: 90dvh;
   max-width: min(660px, calc(100vw - 28px));
   width: 660px;
@@ -84,7 +84,7 @@ dialog::backdrop {
     @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-white px-4 py-3 text-sm font-medium transition hover:bg-leaf disabled:opacity-50;
   }
   .btn-primary {
-    @apply bg-ink text-white border-ink hover:bg-[#3a5140];
+    @apply bg-ink text-white border-ink hover:bg-[#333333];
   }
   .btn-soft {
     @apply bg-leaf border-transparent text-ink;
@@ -102,7 +102,7 @@ dialog::backdrop {
     @apply w-full rounded-lg border border-line bg-paper px-3 py-3 text-sm text-ink;
   }
   .chip {
-    @apply inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-2 text-sm transition hover:border-[#91a37e];
+    @apply inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-2 text-sm transition hover:border-[#888888];
   }
   .chip-selected {
     @apply border-ink bg-ink text-white hover:border-ink;
@@ -123,7 +123,7 @@ dialog::backdrop {
     @apply bg-leaf text-ink;
   }
   .link {
-    @apply text-sm font-medium underline decoration-[#a6b68e] underline-offset-4 hover:text-[#5b7545];
+    @apply text-sm font-medium underline decoration-[#888888] underline-offset-4 hover:text-[#888888];
   }
 }
 .garment-art {
@@ -161,8 +161,8 @@ dialog::backdrop {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 20px 12px;
   padding: 20px 18px 22px;
-  background: #f0f2eb;
-  border: 1px solid #e2e7db;
+  background: #fafafa;
+  border: 1px solid #e8e8e8;
   border-radius: 12px;
 }
 .garment-tile {
@@ -172,7 +172,7 @@ dialog::backdrop {
 .garment-tile:before {
   content: "";
   height: 3px;
-  background: linear-gradient(#b5bda9, #d4dacb);
+  background: linear-gradient(#888888, #888888);
   position: absolute;
   top: 7px;
   left: -6px;
@@ -187,7 +187,7 @@ dialog::backdrop {
   top: 1px;
   left: 50%;
   transform: translateX(-50%);
-  color: #9da98d;
+  color: #888888;
   z-index: 0;
   width: 66px;
   height: 42px;
@@ -216,14 +216,14 @@ dialog::backdrop {
   z-index: 80 !important;
 }
 .fit-stage {
-  background: radial-gradient(ellipse at center, #fff, #f3f6ec);
+  background: radial-gradient(ellipse at center, #fff, #f7f7f7);
   transition:
     background 0.2s,
     border-color 0.2s;
 }
 .fit-stage.drag-target {
-  background: #eaf2dd;
-  border-color: #71864f;
+  background: #eeeeee;
+  border-color: #888888;
 }
 .outfit-art {
   display: flex;
@@ -316,3 +316,8 @@ dialog::backdrop {
     scroll-behavior: auto !important;
   }
 }
+
+.nav-active { background: #111; color: white; }
+.hanger-grid { border-radius: 20px; background: #fafafa; }
+.card { box-shadow: 0 5px 25px #00000003; border-radius: 20px; }
+.btn { border-radius: 999px; }
