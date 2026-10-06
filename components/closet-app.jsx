@@ -78,6 +78,7 @@ function Hanger({ size = 22, ...props }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      type={type}
       {...props}
     >
       <path d="M10 6a2 2 0 1 1 3 1.7c-.6.3-1 .7-1 1.3v2l9 6a1.2 1.2 0 0 1-.7 2H3.7A1.2 1.2 0 0 1 3 17l9-6" />
@@ -113,7 +114,7 @@ function VibeArt({ index }) {
     />
   );
 }
-function Button({ children, primary, soft, className, ...props }) {
+function Button({ children, primary, soft, className, type = "button", ...props }) {
   return (
     <button
       className={cx(

@@ -472,3 +472,20 @@ nav[aria-label="Mobile navigation"] button { font-size:11px; line-height:1.35; }
 .board-heading { padding:0 0 26px; }
 .board-heading h1 { margin:0; font-size:36px; }
 .mood-board-selector { margin-bottom:26px; }
+/* Unified type and controls; retain the Outfits wordmark. */
+:root { --editorial-serif: Arial, Helvetica, sans-serif; }
+body,input,select,textarea,button { font-family:Arial,Helvetica,sans-serif; }
+h1,h2,h3 { font-style:normal; }
+.styling-panel > div:first-child h2 { font-family:inherit; font-size:24px; font-weight:500; letter-spacing:-.04em; }
+.board-heading h1 em,.editorial-intro h1 em { font-family:inherit; font-style:normal; }
+.wordmark-dot { font-family:inherit; font-weight:700; }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; border:1px solid #dedede; border-radius:6px; background:#fff; color:#171717; font-size:13px; font-weight:500; line-height:1.35; padding:12px 18px; text-align:center; }
+.btn-primary { background:#171717; border-color:#171717; color:#fff; }
+.btn-primary:hover:not(:disabled) { background:#333; border-color:#333; color:#fff; }
+.btn-soft { background:#f2f2f2; }
+button:disabled { cursor:not-allowed; opacity:.5; }
+.btn:disabled { transform:none; }
+.btn svg,.icon-btn svg { flex-shrink:0; }
+.chip { font-size:13px; line-height:1.35; min-height:40px; }
+.chip-selected { color:#fff; background:#171717; border-color:#171717; }
+.input { font-size:14px; line-height:1.5; }
