@@ -1,19 +1,38 @@
-# Form
+# Outfits
 
-A Next.js 16 + React 19 + Tailwind CSS 4 virtual closet. The UI is written as React components. The hosted version uses a Cloudflare Worker for private API requests, D1 for records, and R2 for photos and private connection details.
+A private virtual closet built with Next.js and React, deployed on Vercel. Supabase provides verified email/password authentication, Postgres records, and a private storage bucket. Access is restricted to the verified email in `CLOSET_OWNER_EMAIL`.
 
-## Put this in your `outfits` folder
+## Run locally
 
-Extract the source ZIP into your `outfits` folder and open that folder in VS Code or Codex. The folder should directly contain `package.json`, `app/`, and `components/`.
-
-Use Node.js 24 or newer, then run:
+Use Node.js 24 or newer. Connect the Vercel project and Supabase integration, then pull the development environment into the ignored `.env.local` file:
 
 ```sh
-npm install
+npm ci
+vercel env pull .env.local
+npm run db:setup
 npm run dev
 ```
 
-Open the local URL printed in the terminal. The local development server uses a local account and keeps data in `.local/`, which is excluded from Git. Production authentication continues to use ChatGPT sign-in. Local data is separate from the published closet.
+Required server environment: `CLOSET_OWNER_EMAIL`, `POSTGRES_URL` (or `DATABASE_URL`), `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`. The integration may provide `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` instead. Secret service keys and database URLs never belong in client code or Git.
+
+## Authentication setup
+
+Set Supabase Authentication → URL Configuration to the deployed Vercel origin and allow its `/auth/callback` URL. Enable email/password sign-in with email confirmation. Register using the owner's configured email. The built-in Supabase mail service is limited to organization members; configure an SMTP provider if that address cannot receive auth emails. Password recovery can be initiated by the project owner through the Supabase dashboard.
+
+Every API request validates the session against Supabase Auth and checks the verified owner's email. Incoming identity headers are discarded. Mutations require a matching Origin. Postgres tables use RLS with no browser-facing grants; the server applies owner-scoped queries. Photo and connection files share a private bucket accessible only through the authenticated server.
+
+## Deploy
+
+```sh
+npm test
+npm run build
+npm run db:setup
+vercel --prod
+```
+
+`db:setup` applies the versioned Postgres migration transactionally and creates the private bucket. Run it before the first production deployment. Builds do not mutate databases. The linked GitHub `main` branch deploys through Vercel after setup.
+
+The previous Sites deployment remains separate. Its D1 records, photos, and connections are not automatically transferred; copying those requires an authenticated export and ownership mapping after creating the Supabase account. The original Worker is reused as an application service through the Vercel adapters; `drizzle/`, `dev-server.mjs`, and `.openai/hosting.json` remain as historical Sites references, not Vercel deployment configuration.
 
 ## Connections
 
@@ -30,25 +49,15 @@ Open the local URL printed in the terminal. The local development server uses a 
 - Outfit matching considers color harmony, print balance, silhouette proportions, weather, and saved vibes. AI can choose from valid wardrobe combinations and explain the styling.
 - Drag-and-sway wardrobe, saved outfits, calendar plans, and daily recommendations.
 
-## Project structure
+## Implementation
 
-- `app/`: Next.js App Router page, layout, Tailwind styles.
-- `components/closet-app.jsx`: React application and forms.
-- `catalog.js`: categories, moods, aesthetics, sample clothing.
-- `styling.js`: transparent, rule-based outfit ranking.
-- `ai.js`: structured AI photo analysis and styling.
-- `worker.js`: authenticated API and ownership checks.
-- `connections.js`: Google Calendar feed validation and sync.
-- `db/` and `drizzle/`: schema and append-only migrations.
-- `dev-server.mjs`: local Next.js server with SQLite and filesystem adapters.
-- `build.mjs`: packages the Next.js export and Worker for Sites.
-
-```sh
-npm test
-npm run build
-```
-
-`npm run build` creates the Next.js static UI and packages it with the API Worker in `dist/`. Do not deploy only the static export if you need authentication, storage, or API features. The existing private Sites identity is in `.openai/hosting.json`; preserve it when updating this Site. No API keys or calendar links are included in this source.
+- `app/api/[...path]/route.js`: authenticated Vercel API entrypoint.
+- `app/auth/`, `app/login/`, `proxy.js`: sign-in and session refresh.
+- `server/access.js`: verified-owner and request-origin checks.
+- `server/database.js`: parameterized Postgres adapter for the existing service.
+- `server/storage.js`: private file adapter.
+- `migrations/`, `scripts/setup-vercel.mjs`: idempotent provisioning.
+- `components/closet-app.jsx`: wardrobe, outfits, planning, and uploads.
 
 ## Styling references
 

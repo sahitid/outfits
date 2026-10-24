@@ -1360,23 +1360,13 @@ export default function ClosetApp() {
               <p className="subtle">
                 {data.user?.email
                   ? "Signed in as " + data.user.email
-                  : "Sign in with ChatGPT to save your closet."}
+                  : "Sign in to save your private closet."}
               </p>
               <p className="subtle mt-3">
                 Your photos, outfits, and style preferences stay with your
                 private account.
               </p>
-              <a
-                className="btn mt-6"
-                href={
-                  data.user
-                    ? "/signout-with-chatgpt?return_to=%2F"
-                    : "/signin-with-chatgpt?return_to=%2F"
-                }
-                target="_top"
-              >
-                {data.user ? "Sign out" : "Sign in with ChatGPT"}
-              </a>
+              <Button className="mt-6" onClick={async()=>{if(data.user){const r=await fetch('/auth/logout',{method:'POST'});if(!r.ok){notify('Could not sign out. Please try again.');return;}}location.assign('/login');}}>{data.user ? 'Sign out' : 'Sign in'}</Button>
             </>
           )}
           {modal.type.startsWith("delete") && (

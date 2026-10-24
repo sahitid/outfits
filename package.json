@@ -4,23 +4,25 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "next build --webpack && node build.mjs",
-    "db:generate": "drizzle-kit generate",
+    "build": "next build --webpack",
     "check": "node --check worker.js && node --check lib.js && node --check styling.js",
-    "test": "node tests/app.test.js && node tests/ui.test.js",
-    "dev": "node --use-env-proxy --env-file-if-exists=.env.local dev-server.mjs"
+    "test": "node tests/app.test.js && node tests/ui.test.js && node tests/vercel.test.js",
+    "dev": "next dev --webpack",
+    "start": "next start",
+    "db:setup": "node --env-file-if-exists=.env.local scripts/setup-vercel.mjs"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.31.4",
-    "drizzle-orm": "^0.44.5",
-    "jsdom": "^30.1.2",
-    "esbuild": "^0.25.12"
+    "esbuild": "^0.25.12",
+    "jsdom": "^30.1.2"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.118.0",
     "@tailwindcss/postcss": "^4.3.3",
     "lucide-react": "^1.52.0",
     "motion": "^14.0.0",
     "next": "^16.3.8",
+    "postgres": "^3.4.9",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "tailwindcss": "^4.3.3"

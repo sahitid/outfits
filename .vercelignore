@@ -1,0 +1,5 @@
+closet-site/
+.local/
+.env*
+!.env.example
+public/downloads/
