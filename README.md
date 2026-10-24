@@ -1,5 +1,7 @@
 # Outfits
 
+Production: https://outfits-six.vercel.app
+
 A private virtual closet built with Next.js and React, deployed on Vercel. Supabase provides verified email/password authentication, Postgres records, and a private storage bucket. Access is restricted to the verified email in `CLOSET_OWNER_EMAIL`.
 
 ## Run locally

@@ -16,8 +16,9 @@ test('cross-origin and missing-origin writes fail closed',()=>{
  assert(!sameOrigin(new Request('https://closet.example/api/settings')));
 });
 test('authenticated adapter discards forged identity headers and preserves request body',async()=>{
- const request=new Request('https://closet.example/api/settings',{method:'POST',headers:{'oai-authenticated-user-id':'attacker','oai-other':'forged'},body:'{"test":true}'});
+ const request=new Request('https://closet.example/api/settings/?check=1',{method:'POST',headers:{'oai-authenticated-user-id':'attacker','oai-other':'forged'},body:'{"test":true}'});
  const result=trustedRequest(request,{id:'real-owner',email:'owner@example.com',user_metadata:{name:'Sahiti'}});
+ assert.equal(result.url,'https://closet.example/api/settings?check=1');
  assert.equal(result.headers.get('oai-authenticated-user-id'),'real-owner');
  assert.equal(result.headers.get('oai-other'),null);
  assert.equal(await result.text(),'{"test":true}');

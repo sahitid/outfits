@@ -11,5 +11,8 @@ export function trustedRequest(request, user) {
   headers.set('oai-authenticated-user-email', user.email);
   headers.set('oai-authenticated-user-full-name', encodeURIComponent(user.user_metadata?.name || 'Sahiti'));
   headers.set('oai-authenticated-user-full-name-encoding', 'percent-encoded-utf-8');
-  return new Request(request, { headers });
+  const url = new URL(request.url);
+  // Next.js may canonicalize API URLs with a trailing slash; the service uses exact paths.
+  url.pathname = url.pathname.replace(/\/+$/, '') || '/';
+  return new Request(new Request(url, request), { headers });
 }

@@ -3,3 +3,6 @@ closet-site/
 .env*
 !.env.example
 public/downloads/
+
+.agents/
+skills-lock.json
