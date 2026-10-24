@@ -226,7 +226,7 @@ function GarmentTile({ piece, selected, onSelect, onDetails, stageRef, grid }) {
         dragSnapToOrigin
         dragMomentum={false}
         whileHover={
-          reduced ? {} : { rotate: piece.atlas % 2 === 0 ? -3 : 3, y: -3 }
+          reduced ? {} : { rotate: (piece.atlas || 0) % 2 === 0 ? -1 : 1, y: -3 }
         }
         whileDrag={reduced ? { zIndex: 90 } : { scale: 1.06, rotate: 4, zIndex: 90 }}
         transition={{ type: "spring", stiffness: 310, damping: 19 }}
@@ -318,7 +318,7 @@ export default function ClosetApp() {
     [filter, setFilter] = useState("all"),
     [subfilter, setSubfilter] = useState("all"),
     [query, setQuery] = useState(""),
-    [grid, setGrid] = useState(false);
+    [grid, setGrid] = useState(true);
   const [selection, setSelection] = useState([]),
     [result, setResult] = useState(null),
     [pairing, setPairing] = useState(false),
@@ -525,12 +525,12 @@ export default function ClosetApp() {
     (p) =>
       (filter === "all" || p.category === filter) &&
       (subfilter === "all" || p.subtype === subfilter) &&
-      p.name.toLowerCase().includes(query.toLowerCase()),
+      [p.name, p.color, p.category, p.subtype].join(" ").toLowerCase().includes(query.toLowerCase().trim()),
   );
   const activeVibes = data.settings.vibes?.[mood] ?? DEFAULT_VIBES[mood] ?? [];
   const weatherLabel = weather
     ? `${Math.round((weather.temperature * 9) / 5 + 32)}°F · ${weather.description}`
-    : "Philadelphia forecast";
+    : "Forecast loading…";
   const stage = (
     <aside className="styling-panel card p-5 xl:p-6 lg:sticky lg:top-6">
       <div className="flex items-start gap-3">
@@ -538,7 +538,7 @@ export default function ClosetApp() {
           <Sparkles size={22} />
         </span>
         <div>
-          <h2 className="text-lg font-semibold">Style an outfit</h2>
+          <p className="eyebrow studio-kicker">THE STYLING STUDIO</p><h2 className="text-lg font-semibold">A little outfit magic.</h2><p className="subtle studio-description">Start with a favorite. Find its perfect match.</p>
           
         </div>
       </div>
@@ -606,9 +606,9 @@ export default function ClosetApp() {
           <div className="py-10 text-center">
             <Hanger size={46} className="mx-auto text-[#555555]" />
             <h3 className="mt-5 text-base font-medium">
-              Select pieces
+              Your next look starts here
             </h3>
-            <p className="mt-2 text-sm text-muted">Drag or tap to add.</p>
+            <p className="mt-2 text-sm text-muted">Tap a piece from your wardrobe, or let us find a pairing.</p>
           </div>
         )}
         <p className="mt-4 flex items-center justify-center gap-1 text-xs text-[#555555]">
@@ -699,7 +699,7 @@ export default function ClosetApp() {
         <div className="masthead-inner">
           <a href="/" className="wordmark" aria-label="Outfits home">outfits<span className="wordmark-dot">.</span></a>
           <nav className="desktop-nav" aria-label="Main navigation">
-            {nav.map(([v,label]) => <button key={v} aria-current={view===v ? "page" : undefined} onClick={()=>go(v)} className={cx("editorial-nav",view===v&&"is-active")}>{label}</button>)}
+            {nav.map(([v,label,Icon]) => <button key={v} aria-current={view===v ? "page" : undefined} onClick={()=>go(v)} className={cx("editorial-nav",view===v&&"is-active")}><Icon size={16}/>{label}</button>)}
           </nav>
           <div className="masthead-tools">
             <button className="icon-btn" onClick={()=>go("settings")} aria-label="Connections"><Settings2 size={20}/></button>
@@ -724,19 +724,21 @@ export default function ClosetApp() {
             <>
               <section className="closet-editorial">
                 <div className="editorial-intro">
-                  
-                  <h1>My closet</h1>
+                  <p className="eyebrow">A LITTLE LESS “NOTHING TO WEAR”</p>
+                  <h1>Your closet.<br/><em>More possibilities.</em></h1>
+                  <p className="editorial-description">Rediscover what you own. Put together looks that feel like you, for whatever the day has planned.</p>
                   <div className="editorial-actions">
                     <Button primary onClick={() => setModal({type:"upload"})}><Plus size={17}/> Add clothing</Button>
-                    <button className="editorial-text-link" onClick={()=>go("vibes")}>Vibes <span aria-hidden="true">↗︎</span></button>
+                    <button className="editorial-text-link" onClick={()=>document.getElementById("wardrobe")?.scrollIntoView({behavior:"smooth",block:"start"})}>Explore your wardrobe <span aria-hidden="true">↘</span></button>
                   </div>
+                  <div className="closet-summary"><span><strong>{isDemo ? 0 : pieces.length}</strong> closet pieces</span><span><strong>{data.outfits.length}</strong> saved looks</span><span><LockKeyhole size={12}/> Just for you</span></div>
                 </div>
                 <div className="editorial-composition">
-                  
+                  <div className="composition-caption"><span>{isDemo ? "THE SAMPLE EDIT" : "FROM YOUR WARDROBE"}</span><span>EVERYDAY, REIMAGINED ↗</span></div>
                   <div className="composition-pieces" aria-label={isDemo ? "Sample wardrobe inspiration" : "From your wardrobe"}>
-                    {[(pieces.find(p=>p.category==="tops") || pieces[0]),(pieces.find(p=>p.category==="bottoms") || pieces[1])].filter(Boolean).map((p,i)=><button key={p.id} className={"composition-piece piece-"+i} onClick={()=>{choose(p.id,true);document.getElementById("wardrobe")?.scrollIntoView({behavior:"smooth",block:"start"});}} aria-label={"Style "+p.name}><Art piece={p}/><span>{p.name} <span aria-hidden="true">↗︎</span></span></button>)}
+                    {[(pieces.find(p=>p.category==="tops") || pieces[0]),(pieces.find(p=>p.category==="bottoms") || pieces[1])].filter(Boolean).map((p,i)=><button key={p.id} className={"composition-piece piece-"+i} onClick={()=>{choose(p.id,true);document.getElementById("wardrobe")?.scrollIntoView({behavior:"smooth",block:"start"});}} aria-label={"Style "+p.name}><Art piece={p}/><span>{p.name} <span aria-hidden="true">↗</span></span></button>)}
                   </div>
-                  
+                  <div className="composition-bottom"><span>Familiar pieces. A fresh perspective.</span><span>01 / YOUR DAILY EDIT</span></div>
                 </div>
               </section>
               <button className="daily-dispatch" onClick={()=>go("today")}>
@@ -744,7 +746,7 @@ export default function ClosetApp() {
                 <span className="dispatch-weather">{loc.name} <span aria-hidden="true">/</span> {weatherLabel}</span>
                 <span className="dispatch-cta">Style my day <span aria-hidden="true">↗︎</span></span>
               </button>
-              <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
+              <div className="closet-workspace grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_340px]">
                 <section id="wardrobe" className="wardrobe-section">
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -758,14 +760,15 @@ export default function ClosetApp() {
                         {loading
                           ? "Opening your closet…"
                           : isDemo
-                            ? "Sample pieces"
-                            : ""}
+                            ? "Explore 12 sample pieces, then add your own to make this closet yours."
+                            : "Your favorites, ready for a fresh combination."}
                       </p>
                     </div>
                     <div className="flex rounded-lg border border-line bg-white p-1">
                       <button
                         className={cx("rounded p-2", !grid && "bg-leaf")}
                         aria-label="Hanger view"
+                        aria-pressed={!grid}
                         onClick={() => setGrid(false)}
                       >
                         <Hanger size={17} />
@@ -773,6 +776,7 @@ export default function ClosetApp() {
                       <button
                         className={cx("rounded p-2", grid && "bg-leaf")}
                         aria-label="Grid view"
+                        aria-pressed={grid}
                         onClick={() => setGrid(true)}
                       >
                         <LayoutGrid size={17} />
@@ -784,6 +788,7 @@ export default function ClosetApp() {
                       {["all", "tops", "bottoms", "layers"].map((f) => (
                         <button
                           key={f}
+                          aria-pressed={filter === f}
                           className={cx(
                             "rounded-lg px-3 py-2 text-sm",
                             filter === f
@@ -803,7 +808,7 @@ export default function ClosetApp() {
                       <Search size={15} className="text-muted" />
                       <input
                         aria-label="Find a piece"
-                        placeholder="Find a piece"
+                        placeholder="Search name, color…"
                         className="min-w-0 w-full bg-transparent text-xs outline-none"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
@@ -853,7 +858,7 @@ export default function ClosetApp() {
                     </div>
                   ) : (
                     <Empty title="No matches">
-                      No pieces match this filter.
+                      Try another color, name, or category.<br/><Button className="mt-4" onClick={()=>{setQuery("");setFilter("all");setSubfilter("all");}}>Clear filters</Button>
                     </Empty>
                   )}
                   

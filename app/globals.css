@@ -463,29 +463,102 @@ dialog[open] { animation:dialog-enter 180ms cubic-bezier(.2,.7,.2,1); border-rad
 .vibe-photo { width:100%; height:100%; background-image:none; overflow:hidden; }
 nav[aria-label="Mobile navigation"] button { font-size:11px; line-height:1.35; }
 @media(max-width:650px) { .board-heading { padding-bottom:20px; } .board-toolbar { padding-bottom:14px; } }
-/* Compact utility layout. */
-.closet-editorial { min-height:0; grid-template-columns:1fr; }
-.editorial-composition { display:none; }
-.editorial-intro { padding:0 0 26px; flex-direction:row; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
-.editorial-intro h1 { font-size:36px; line-height:1.2; margin:0; letter-spacing:-.045em; }
-.editorial-actions { margin:0; }
-.board-heading { padding:0 0 26px; }
-.board-heading h1 { margin:0; font-size:36px; }
-.mood-board-selector { margin-bottom:26px; }
-/* Unified type and controls; retain the Outfits wordmark. */
-:root { --editorial-serif: Arial, Helvetica, sans-serif; }
-body,input,select,textarea,button { font-family:Arial,Helvetica,sans-serif; }
-h1,h2,h3 { font-style:normal; }
-.styling-panel > div:first-child h2 { font-family:inherit; font-size:24px; font-weight:500; letter-spacing:-.04em; }
-.board-heading h1 em,.editorial-intro h1 em { font-family:inherit; font-style:normal; }
-.wordmark-dot { font-family:inherit; font-weight:700; }
-.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; border:1px solid #dedede; border-radius:6px; background:#fff; color:#171717; font-size:13px; font-weight:500; line-height:1.35; padding:12px 18px; text-align:center; }
-.btn-primary { background:#171717; border-color:#171717; color:#fff; }
-.btn-primary:hover:not(:disabled) { background:#333; border-color:#333; color:#fff; }
-.btn-soft { background:#f2f2f2; }
-button:disabled { cursor:not-allowed; opacity:.5; }
-.btn:disabled { transform:none; }
+
+/* Outfits: a warm, personal wardrobe and styling workspace. */
+@theme {
+  --color-ink: #283c32;
+  --color-muted: #6e736a;
+  --color-paper: #faf9f6;
+  --color-line: #e1e4dc;
+  --color-leaf: #edf0e7;
+  --color-rose: #f2e9e1;
+  --font-sans: "Avenir Next", Avenir, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+:root { --editorial-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
+body { background:#faf9f6; color:#283c32; font-family:var(--font-sans); }
+::selection { background:#dce6cd; color:#233d2b; }
+.site-masthead { background:#faf9f6ed; border-color:#e1e4dc; }
+.masthead-inner { max-width:1500px; min-height:88px; gap:30px; }
+.wordmark { font-size:44px; letter-spacing:-3px; color:#283c32; }
+.wordmark-dot { color:#8d9e71; }
+.desktop-nav { gap:8px; align-items:center; }
+.editorial-nav { display:flex; align-items:center; gap:8px; padding:13px 16px; font-size:12px; border-radius:30px; color:#71776d; }
+.editorial-nav:after { display:none; }
+.editorial-nav:hover { color:#283c32; background:#f0f1eb; }
+.editorial-nav.is-active { background:#e9eddf; color:#344833; font-weight:600; }
+.profile-button { background:#eee5db; border-color:#eee5db; color:#6c5541; font-weight:600; }
+.page-shell { max-width:1500px; padding-top:32px; }
+.closet-editorial { grid-template-columns:1.1fr 1fr; min-height:350px; border:0; gap:44px; }
+.editorial-intro { padding:20px 0 25px; }
+.eyebrow { color:#6b7862; font-size:10px; font-weight:600; letter-spacing:.14em; }
+.editorial-intro h1 { font-size:clamp(43px,4.4vw,64px); line-height:1.08; font-weight:500; margin-top:18px; letter-spacing:-.055em; }
+.editorial-intro h1 em { font-family:var(--editorial-serif); font-weight:400; color:#768567; letter-spacing:-.055em; }
+.editorial-description { font-size:14px; line-height:1.8; max-width:390px; margin-top:19px; color:#72766c; }
+.editorial-actions { margin-top:24px; gap:24px; }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; border:1px solid #dce1d5; border-radius:10px; background:#fff; color:#283c32; font-size:13px; font-weight:500; line-height:1.4; padding:12px 18px; text-align:center; }
+.btn-primary { background:#344c3a; border-color:#344c3a; color:#fff; }
+.btn-primary:hover:not(:disabled) { background:#253b2b; border-color:#253b2b; color:white; }
+.btn-soft { background:#edf0e7; }
 .btn svg,.icon-btn svg { flex-shrink:0; }
-.chip { font-size:13px; line-height:1.35; min-height:40px; }
-.chip-selected { color:#fff; background:#171717; border-color:#171717; }
-.input { font-size:14px; line-height:1.5; }
+.btn:disabled { cursor:not-allowed; transform:none; }
+.editorial-text-link { color:#506047; border-color:#a9b29b; font-size:12px; }
+.closet-summary { display:flex; flex-wrap:wrap; gap:20px; margin-top:29px; color:#7b8074; font-size:11px; }
+.closet-summary span { display:flex; align-items:center; gap:6px; }
+.closet-summary strong { font-size:13px; font-weight:600; color:#47563f; }
+.editorial-composition { margin:0; padding:24px 27px 20px; border-radius:24px; background:radial-gradient(ellipse at 70% 25%,#f8f5ec,#ecebdf); border:1px solid #eae8dc; }
+.composition-caption { color:#7a806d; font-size:9px; }
+.composition-pieces { min-height:260px; padding:10px 4px; }
+.composition-piece { height:260px; width:53%; }
+.composition-piece .garment-art { mix-blend-mode:multiply; }
+.composition-piece > span { color:#69715c; font-size:10px; }
+.composition-bottom { border-color:#d9dbcd; font-size:10px; letter-spacing:0; padding-top:14px; color:#777e6b; }
+.composition-bottom span:last-child { font-size:8px; letter-spacing:.1em; }
+.daily-dispatch { padding:17px 22px; margin:24px 0 34px; border:1px solid #e0e5d7; border-radius:12px; background:#eff2e9; gap:22px; }
+.dispatch-label { color:#526047; font-size:10px; }
+.dispatch-weather { color:#6c7662; }
+.dispatch-cta { color:#3d553c; font-weight:600; }
+.section-title { font-size:25px; color:#344632; }
+.wardrobe-section { scroll-margin-top:24px; }
+.wardrobe-toolbar { border:0; padding:0; gap:14px; }
+.wardrobe-toolbar > div { gap:5px; }
+.wardrobe-toolbar > div button { border-radius:24px; font-size:12px; min-height:40px; padding:9px 15px; }
+.wardrobe-toolbar label { width:210px; min-height:40px; border-radius:24px; }
+.hanger-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:22px 18px; }
+.garment-visual { background:#f0f0e9; border:1px solid #e9e9df; border-radius:15px; padding:24px 10px 12px; aspect-ratio:.98; }
+.grid-view .garment-visual { padding:16px; }
+.garment-tile:nth-child(3n+2) .garment-visual { background:#f2eee8; border-color:#ebe5de; }
+.garment-tile:nth-child(3n) .garment-visual { background:#ecefe9; border-color:#e3e8df; }
+.garment-visual .garment-art { mix-blend-mode:multiply; filter:drop-shadow(0 8px 6px #35422612); }
+.garment-tile:before { top:12px; left:15px; right:15px; background:#c2cbb7; }
+.garment-hanger { top:7px; color:#aab69f; }
+.garment-caption { background:transparent; padding:13px 2px; }
+.garment-caption button > span:first-child { font-size:13px; color:#37432e; font-weight:500; }
+.garment-caption button > span:nth-child(2) { font-size:11px; }
+.garment-tile:has([aria-pressed="true"]) .garment-visual { box-shadow:inset 0 0 0 2px #788c65; }
+.styling-panel { background:white; border:1px solid #e1e5d9; border-radius:18px; box-shadow:0 6px 22px #273d2705; top:20px; }
+.studio-kicker { font-size:9px; margin-bottom:9px; }
+.styling-panel > div:first-child h2 { font-family:var(--editorial-serif); font-size:28px; font-weight:400; line-height:1.1; color:#3c5036; letter-spacing:-.045em; }
+.studio-description { font-size:12px; line-height:1.6; margin-top:11px; }
+.fit-stage { min-height:255px; border-radius:12px; border-color:#cdd6c3; background:#f8f9f5; }
+.fit-stage.drag-target { background:#e9efdf; border-color:#617d4d; }
+.fit-stage h3 { font-size:15px; }
+.fit-stage .text-muted { font-size:12px; line-height:1.7; }
+.input { border-radius:9px; border-color:#dfe4d7; min-height:44px; font-size:14px; }
+.chip { font-size:12px; min-height:40px; }
+.chip-selected { background:#344c3a; border-color:#344c3a; color:white; }
+.card:not(.styling-panel) { border-radius:16px; border-color:#e1e4dc; }
+.link { color:#59724b; text-decoration-color:#a1b194; }
+.link:hover { color:#2d4625; }
+.footer-wordmark { color:#344c3a; }
+.board-heading h1 { color:#344632; }
+.board-tabs button.active { color:#344c3a; border-color:#344c3a; }
+.board-search { background:#eef0e8; }
+.pin-saved .pin-save { background:#344c3a; }
+.switch-control input:checked + span { background:#344c3a; }
+nav[aria-label="Mobile navigation"] { background:#faf9f6f5; backdrop-filter:blur(14px); }
+nav[aria-label="Mobile navigation"] button { min-height:48px; font-size:11px; }
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible { outline:2px solid #71895b; outline-offset:4px; }
+@media(min-width:1450px) { .closet-editorial { min-height:370px; } .composition-piece { height:280px; } }
+@media(max-width:1100px) { .masthead-inner { gap:16px; } .editorial-nav { padding:11px 12px; } .desktop-nav { gap:1px; } .editorial-nav svg { display:none; } .closet-editorial { gap:28px; } .hanger-grid { gap:20px 12px; } }
+@media(max-width:1023px) { .desktop-nav { display:none; } .closet-editorial { min-height:320px; } .editorial-intro h1 { font-size:48px; } .composition-piece { height:225px; } .composition-pieces { min-height:240px; } .hanger-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } .styling-panel { max-width:none; } }
+@media(max-width:650px) { .masthead-inner { min-height:72px; padding:0 20px; } .wordmark { font-size:38px; } .page-shell { padding-top:20px; } .closet-editorial { grid-template-columns:1fr; gap:10px; } .editorial-intro { padding:5px 0 18px; } .editorial-intro h1 { font-size:47px; margin-top:15px; } .editorial-description { font-size:13px; max-width:340px; margin-top:15px; } .editorial-actions { gap:18px; margin-top:19px; } .closet-summary { margin-top:20px; gap:16px; } .editorial-composition { border-radius:18px; padding:18px 22px; } .composition-pieces { min-height:190px; padding:3px 12px; } .composition-piece { height:200px; } .composition-caption { font-size:8px; } .composition-bottom { font-size:9px; } .daily-dispatch { padding:15px 16px; margin:18px 0 28px; gap:10px; } .dispatch-weather { font-size:11px; } .dispatch-cta { font-size:11px; } .hanger-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px 12px; } .wardrobe-toolbar label { width:100%; } .wardrobe-toolbar > div { width:100%; justify-content:space-between; } .wardrobe-toolbar > div button { padding:9px 13px; } .garment-caption button > span:first-child { font-size:12px; } .garment-visual { aspect-ratio:.94; } .closet-workspace { gap:22px; } }
